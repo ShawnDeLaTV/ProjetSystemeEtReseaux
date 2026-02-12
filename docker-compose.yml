@@ -1,0 +1,34 @@
+version: '3.8'
+
+networks:
+  sso_network:
+    driver: bridge
+
+services:
+  # Le Reverse Proxy (Nginx Proxy Manager)
+  # C'est lui qui gère le HTTPS et redirige vers les bons services
+  nginx-proxy:
+    image: 'jc21/nginx-proxy-manager:latest'
+    container_name: nginx-proxy
+    restart: always
+    ports:
+      - '80:80'
+      - '81:81'   # Interface de gestion (Admin)
+      - '443:443'
+    volumes:
+      - ./infrastructure/nginx/data:/data
+      - ./infrastructure/nginx/letsencrypt:/etc/letsencrypt
+    networks:
+      - sso_network
+
+  # Authelia (Le serveur d'authentification)
+  authelia:
+    image: 'authelia/authelia:latest'
+    container_name: authelia
+    restart: always
+    volumes:
+      - ./infrastructure/authelia:/config
+    networks:
+      - sso_network
+    environment:
+      - TZ=America/Montreal
