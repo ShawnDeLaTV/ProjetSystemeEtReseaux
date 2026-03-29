@@ -2,3 +2,4 @@
 infrastructure/authelia/notification.txt
 infrastructure/nginx/data
 infrastructure/db/
+.env
