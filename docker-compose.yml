@@ -32,3 +32,21 @@ services:
       - sso_network
     environment:
       - TZ=America/Montreal
+    
+    # LLDAP (Le serveur d'annuaire pour le bonus)
+  lldap:
+    image: 'lldap/lldap:latest'
+    container_name: lldap
+    restart: always
+    environment:
+      - TZ=America/Montreal
+      - LLDAP_JWT_SECRET=${LLDAP_JWT_SECRET}
+      - LLDAP_LDAP_USER_PASS=${LLDAP_ADMIN_PASSWORD}
+      - LLDAP_LDAP_BASE_DN=dc=techsolutions,dc=com
+    volumes:
+      - ./infrastructure/lldap:/data
+    ports:
+      - "17170:17170" 
+      - "3890:3890"
+    networks:
+      - sso_network
