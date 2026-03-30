@@ -3,3 +3,5 @@ infrastructure/authelia/notification.txt
 infrastructure/nginx/data
 infrastructure/db/
 .env
+private.pem
+public.pem

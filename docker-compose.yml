@@ -1,19 +1,12 @@
-version: '3.8'
-
-networks:
-  sso_network:
-    driver: bridge
-
 services:
-  # Le Reverse Proxy (Nginx Proxy Manager)
-  # C'est lui qui gère le HTTPS et redirige vers les bons services
+  # Nginx Proxy Manager
   nginx-proxy:
     image: 'jc21/nginx-proxy-manager:latest'
     container_name: nginx-proxy
     restart: always
     ports:
       - '80:80'
-      - '81:81'   # Interface de gestion (Admin)
+      - '81:81'
       - '443:443'
     volumes:
       - ./infrastructure/nginx/data:/data
@@ -21,19 +14,27 @@ services:
     networks:
       - sso_network
 
-  # Authelia (Le serveur d'authentification)
+  # Authelia
   authelia:
     image: 'authelia/authelia:latest'
     container_name: authelia
     restart: always
+    ports:
+      - "9091:9091" 
     volumes:
       - ./infrastructure/authelia:/config
     networks:
       - sso_network
     environment:
       - TZ=America/Montreal
-    
-    # LLDAP (Le serveur d'annuaire pour le bonus)
+      - AUTHELIA_IDENTITY_PROVIDERS_OIDC_HMAC_SECRET=${AUTHELIA_JWT_SECRET}
+      - AUTHELIA_STORAGE_ENCRYPTION_KEY=${AUTHELIA_STORAGE_KEY}
+      - AUTHELIA_SESSION_SECRET=${AUTHELIA_SESSION_SECRET}
+      - LDAP_PASSWORD=${LLDAP_ADMIN_PASSWORD}
+    depends_on:
+      - lldap
+
+  # LLDAP
   lldap:
     image: 'lldap/lldap:latest'
     container_name: lldap
@@ -47,6 +48,10 @@ services:
       - ./infrastructure/lldap:/data
     ports:
       - "17170:17170" 
-      - "3890:3890"
+      - "3890:3890" 
     networks:
       - sso_network
+
+networks:
+  sso_network:
+    driver: bridge
