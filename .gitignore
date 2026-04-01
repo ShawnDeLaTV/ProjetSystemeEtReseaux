@@ -1,16 +1,29 @@
-# Variables d'environnement
+# --- Variables d'environnement ---
 .env
-# Certificats
+
+# --- Certificats ---
 private.pem
 public.pem
-# Données des services
+
+# --- Données des services ---
+# Authelia
 infrastructure/authelia/notification.txt
+# Nginx
 infrastructure/nginx/data
-infrastructure/db/
+# Gitlab
 infrastructure/gitlab/config
 infrastructure/gitlab/data
 infrastructure/gitlab/logs
+# Jenkins
 infrastructure/jenkins/data
+# Nextcloud
 infrastructure/nextcloud/data
 infrastructure/nextcloud/db
+# Rocket.Chat
 infrastructure/rocketchat/db
+# Jira
+infrastructure/jira/db
+infrastructure/jira/data
+# Confluence
+infrastructure/confluence/db
+infrastructure/confluence/data
