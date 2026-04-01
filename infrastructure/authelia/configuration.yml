@@ -466,7 +466,7 @@ authentication_backend:
     additional_groups_dn: ou=groups
     user: uid=admin,ou=people,dc=techsolutions,dc=com
    
-    password: [inserer password]
+    password: [insérer mdp]
     
     attributes:
       display_name: displayName

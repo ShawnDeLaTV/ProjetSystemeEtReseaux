@@ -1,0 +1,290 @@
+{
+	"Id": "c4a8d2d0e7ad09000fc3502199901148dc919226134aaef3140f26543ab9a7af",
+	"Created": "2026-04-01T01:43:37.289780267Z",
+	"Path": "/assets/init-container",
+	"Args": [],
+	"State": {
+		"Status": "running",
+		"Running": true,
+		"Paused": false,
+		"Restarting": false,
+		"OOMKilled": false,
+		"Dead": false,
+		"Pid": 436,
+		"ExitCode": 0,
+		"Error": "",
+		"StartedAt": "2026-04-01T01:43:37.619620598Z",
+		"FinishedAt": "0001-01-01T00:00:00Z",
+		"Health": {
+			"Status": "starting",
+			"FailingStreak": 0,
+			"Log": []
+		}
+	},
+	"Image": "sha256:6024d9f2a8d52dd56ffa8b510fcfc368d7ddaed1102f76ed6c419289e68921b0",
+	"ResolvConfPath": "/var/lib/docker/containers/c4a8d2d0e7ad09000fc3502199901148dc919226134aaef3140f26543ab9a7af/resolv.conf",
+	"HostnamePath": "/var/lib/docker/containers/c4a8d2d0e7ad09000fc3502199901148dc919226134aaef3140f26543ab9a7af/hostname",
+	"HostsPath": "/var/lib/docker/containers/c4a8d2d0e7ad09000fc3502199901148dc919226134aaef3140f26543ab9a7af/hosts",
+	"LogPath": "/var/lib/docker/containers/c4a8d2d0e7ad09000fc3502199901148dc919226134aaef3140f26543ab9a7af/c4a8d2d0e7ad09000fc3502199901148dc919226134aaef3140f26543ab9a7af-json.log",
+	"Name": "/Gitlab",
+	"RestartCount": 0,
+	"Driver": "overlayfs",
+	"Platform": "linux",
+	"MountLabel": "",
+	"ProcessLabel": "",
+	"AppArmorProfile": "",
+	"ExecIDs": null,
+	"HostConfig": {
+		"Binds": [],
+		"ContainerIDFile": "",
+		"LogConfig": {
+			"Type": "json-file",
+			"Config": {}
+		},
+		"NetworkMode": "bridge",
+		"PortBindings": {
+			"22/tcp": [
+				{
+					"HostIp": "",
+					"HostPort": "0"
+				}
+			],
+			"443/tcp": [
+				{
+					"HostIp": "",
+					"HostPort": "37000"
+				}
+			],
+			"80/tcp": [
+				{
+					"HostIp": "",
+					"HostPort": "38000"
+				}
+			]
+		},
+		"RestartPolicy": {
+			"Name": "no",
+			"MaximumRetryCount": 0
+		},
+		"AutoRemove": false,
+		"VolumeDriver": "",
+		"VolumesFrom": null,
+		"ConsoleSize": [
+			0,
+			0
+		],
+		"CapAdd": null,
+		"CapDrop": null,
+		"CgroupnsMode": "private",
+		"Dns": null,
+		"DnsOptions": null,
+		"DnsSearch": null,
+		"ExtraHosts": null,
+		"GroupAdd": null,
+		"IpcMode": "private",
+		"Cgroup": "",
+		"Links": null,
+		"OomScoreAdj": 0,
+		"PidMode": "",
+		"Privileged": false,
+		"PublishAllPorts": false,
+		"ReadonlyRootfs": false,
+		"SecurityOpt": null,
+		"UTSMode": "",
+		"UsernsMode": "",
+		"ShmSize": 67108864,
+		"Runtime": "runc",
+		"Isolation": "",
+		"CpuShares": 0,
+		"Memory": 0,
+		"NanoCpus": 0,
+		"CgroupParent": "",
+		"BlkioWeight": 0,
+		"BlkioWeightDevice": null,
+		"BlkioDeviceReadBps": null,
+		"BlkioDeviceWriteBps": null,
+		"BlkioDeviceReadIOps": null,
+		"BlkioDeviceWriteIOps": null,
+		"CpuPeriod": 0,
+		"CpuQuota": 0,
+		"CpuRealtimePeriod": 0,
+		"CpuRealtimeRuntime": 0,
+		"CpusetCpus": "",
+		"CpusetMems": "",
+		"Devices": null,
+		"DeviceCgroupRules": null,
+		"DeviceRequests": null,
+		"MemoryReservation": 0,
+		"MemorySwap": 0,
+		"MemorySwappiness": null,
+		"OomKillDisable": null,
+		"PidsLimit": null,
+		"Ulimits": null,
+		"CpuCount": 0,
+		"CpuPercent": 0,
+		"IOMaximumIOps": 0,
+		"IOMaximumBandwidth": 0,
+		"MaskedPaths": [
+			"/proc/acpi",
+			"/proc/asound",
+			"/proc/interrupts",
+			"/proc/kcore",
+			"/proc/keys",
+			"/proc/latency_stats",
+			"/proc/sched_debug",
+			"/proc/scsi",
+			"/proc/timer_list",
+			"/proc/timer_stats",
+			"/sys/devices/virtual/powercap",
+			"/sys/firmware"
+		],
+		"ReadonlyPaths": [
+			"/proc/bus",
+			"/proc/fs",
+			"/proc/irq",
+			"/proc/sys",
+			"/proc/sysrq-trigger"
+		]
+	},
+	"GraphDriver": {
+		"Data": null,
+		"Name": ""
+	},
+	"Mounts": [
+		{
+			"Type": "volume",
+			"Name": "974b686782237a327e0bf7ea1b6b767a3bf244bedd97a38e8b6dece010a3bf82",
+			"Source": "/var/lib/docker/volumes/974b686782237a327e0bf7ea1b6b767a3bf244bedd97a38e8b6dece010a3bf82/_data",
+			"Destination": "/etc/gitlab",
+			"Driver": "local",
+			"Mode": "",
+			"RW": true,
+			"Propagation": ""
+		},
+		{
+			"Type": "volume",
+			"Name": "9443d9824775f8519daf6e9cf0b301bcac40af71bc7b9736c3847dd8ba43d593",
+			"Source": "/var/lib/docker/volumes/9443d9824775f8519daf6e9cf0b301bcac40af71bc7b9736c3847dd8ba43d593/_data",
+			"Destination": "/var/log/gitlab",
+			"Driver": "local",
+			"Mode": "",
+			"RW": true,
+			"Propagation": ""
+		},
+		{
+			"Type": "volume",
+			"Name": "d31753fd0dbaa33cdb811b85c066de9a447c34d886ec55c032bde2bf55d45915",
+			"Source": "/var/lib/docker/volumes/d31753fd0dbaa33cdb811b85c066de9a447c34d886ec55c032bde2bf55d45915/_data",
+			"Destination": "/var/opt/gitlab",
+			"Driver": "local",
+			"Mode": "",
+			"RW": true,
+			"Propagation": ""
+		}
+	],
+	"Config": {
+		"Hostname": "c4a8d2d0e7ad",
+		"Domainname": "",
+		"User": "",
+		"AttachStdin": false,
+		"AttachStdout": false,
+		"AttachStderr": false,
+		"ExposedPorts": {
+			"22/tcp": {},
+			"443/tcp": {},
+			"80/tcp": {}
+		},
+		"Tty": false,
+		"OpenStdin": false,
+		"StdinOnce": false,
+		"Env": [
+			"PATH=/opt/gitlab/embedded/bin:/opt/gitlab/bin:/assets:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+			"LANG=C.UTF-8",
+			"EDITOR=/bin/vi",
+			"GITLAB_ALLOW_SHA1_RSA=false",
+			"TERM=xterm"
+		],
+		"Cmd": [
+			"/assets/init-container"
+		],
+		"Healthcheck": {
+			"Test": [
+				"CMD-SHELL",
+				"/opt/gitlab/bin/gitlab-healthcheck --fail --max-time 10"
+			],
+			"Interval": 60000000000,
+			"Timeout": 30000000000,
+			"Retries": 5
+		},
+		"Image": "gitlab/gitlab-ce:latest",
+		"Volumes": {
+			"/etc/gitlab": {},
+			"/var/log/gitlab": {},
+			"/var/opt/gitlab": {}
+		},
+		"WorkingDir": "",
+		"Entrypoint": null,
+		"OnBuild": null,
+		"Labels": {
+			"org.opencontainers.image.authors": "GitLab Distribution Team <distribution-be@gitlab.com>",
+			"org.opencontainers.image.base.name": "docker.io/ubuntu:24.04",
+			"org.opencontainers.image.documentation": "https://docs.gitlab.com/ee/install/docker/",
+			"org.opencontainers.image.ref.name": "ubuntu",
+			"org.opencontainers.image.source": "https://gitlab.com/gitlab-org/omnibus-gitlab",
+			"org.opencontainers.image.title": "GitLab Omnibus Docker",
+			"org.opencontainers.image.version": "24.04"
+		},
+		"StopTimeout": 1
+	},
+	"NetworkSettings": {
+		"Bridge": "",
+		"SandboxID": "592a3cbf225bb299ed2f9a5eed719e9e944a71d4bbcfc9bd332dfe6dae7bd099",
+		"SandboxKey": "/var/run/docker/netns/592a3cbf225b",
+		"Ports": {
+			"22/tcp": [],
+			"443/tcp": [],
+			"80/tcp": []
+		},
+		"HairpinMode": false,
+		"LinkLocalIPv6Address": "",
+		"LinkLocalIPv6PrefixLen": 0,
+		"SecondaryIPAddresses": null,
+		"SecondaryIPv6Addresses": null,
+		"EndpointID": "",
+		"Gateway": "",
+		"GlobalIPv6Address": "",
+		"GlobalIPv6PrefixLen": 0,
+		"IPAddress": "",
+		"IPPrefixLen": 0,
+		"IPv6Gateway": "",
+		"MacAddress": "",
+		"Networks": {
+			"bridge": {
+				"IPAMConfig": null,
+				"Links": null,
+				"Aliases": null,
+				"MacAddress": "ce:82:34:91:9b:27",
+				"DriverOpts": null,
+				"GwPriority": 0,
+				"NetworkID": "2a040a196b292f0ecbef3514d694d432f8a6f30999de250f44d4f6a03a9b28d6",
+				"EndpointID": "3b78698aa0522e059b60843ab9f7e3984d37873f2f1c771db9d2a55cda13aa6c",
+				"Gateway": "172.17.0.1",
+				"IPAddress": "172.17.0.2",
+				"IPPrefixLen": 16,
+				"IPv6Gateway": "",
+				"GlobalIPv6Address": "",
+				"GlobalIPv6PrefixLen": 0,
+				"DNSNames": null
+			}
+		}
+	},
+	"ImageManifestDescriptor": {
+		"mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+		"digest": "sha256:43ba5dc49578bd980a4bc5407eff9ab41eefcb39823173335926a7bc7b8ed54f",
+		"size": 2072,
+		"platform": {
+			"architecture": "amd64",
+			"os": "linux"
+		}
+	}
+}

@@ -12,9 +12,9 @@ services:
     container_name: nginx-proxy
     restart: always
     ports:
-      - '80:80'   # HTTP
-      - '81:81'   # Interface de gestion du proxy
-      - '443:443' # HTTPS
+      - '80:80'
+      - '81:81'   # Interface de gestion (Admin)
+      - '443:443'
     volumes:
       - ./infrastructure/nginx/data:/data
       - ./infrastructure/nginx/letsencrypt:/etc/letsencrypt
@@ -26,22 +26,14 @@ services:
     image: 'authelia/authelia:latest'
     container_name: authelia
     restart: always
-    ports:
-      - "9091:9091" # Port pour l'interface d'administration d'Authelia
     volumes:
       - ./infrastructure/authelia:/config
     networks:
       - sso_network
     environment:
       - TZ=America/Montreal
-      - AUTHELIA_IDENTITY_PROVIDERS_OIDC_HMAC_SECRET=${AUTHELIA_JWT_SECRET}
-      - AUTHELIA_STORAGE_ENCRYPTION_KEY=${AUTHELIA_STORAGE_KEY}
-      - AUTHELIA_SESSION_SECRET=${AUTHELIA_SESSION_SECRET}
-      - LDAP_PASSWORD=${LLDAP_ADMIN_PASSWORD}
-    depends_on:
-      - lldap
-
-  # LLDAP (Le serveur d'annuaire pour le bonus)
+    
+    # LLDAP (Le serveur d'annuaire pour le bonus)
   lldap:
     image: 'lldap/lldap:latest'
     container_name: lldap
@@ -54,9 +46,44 @@ services:
     volumes:
       - ./infrastructure/lldap:/data
     ports:
-      - "17170:17170"   # Port pour l'interface d'administration de LLDAP
-      - "3890:3890"     # Port pour les requêtes LDAP (3890 au lieu de 389 pour éviter les conflits avec d'autres services)
+      - "17170:17170" 
+      - "3890:3890"
     networks:
+      - sso_network
+
+  #Gitlab
+  gitlab :
+    image : 'gitlab/gitlab-ce:latest'
+    container_name : gitlab
+    restart : always
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'https://gitlab.mondomaine.com'
+        gitlab_rails['gitlab_shell_ssh_port'] = 2222
+        gitlab_rails['omniauth_enabled'] = true
+        nginx['listen_port'] = 80
+        nginx['listen_https'] = false
+    ports :
+      - "2222:22"
+    volumes :
+      - ./infrastructure/Gitlab/config:/etc/gitlab
+      - ./infrastructure/Gitlab/logs:/var/log/gitlab
+      - ./infrastructure/Gitlab/data:/var/opt/gitlab
+    networks :
+      - sso_network
+
+  #Jenkins
+  jenkins:
+    image : 'jenkins/jenkins:lts'
+    container_name: jenkins
+    restart : always
+    user : root
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+    volumes:
+      - jenkins-data : ./infrastructure/Jenkins/data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks :
       - sso_network
 
   # Nextcloud (Le service de stockage de fichiers)
