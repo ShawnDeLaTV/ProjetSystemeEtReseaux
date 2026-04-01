@@ -457,13 +457,24 @@ authentication_backend:
     ## Depending on the option here certain other values in this section have a default value, notably all of the
     ## attribute mappings have a default value that this config overrides, you can read more about these default values
     ## at https://www.authelia.com/c/ldap#defaults
-    implementation: lldap
-    address: ldap://lldap:389
+    implementation: custom
+    address: ldap://lldap:3890
+    timeout: 5s
+    start_tls: false  
     base_dn: dc=techsolutions,dc=com
     additional_users_dn: ou=people
     additional_groups_dn: ou=groups
     user: uid=admin,ou=people,dc=techsolutions,dc=com
-    password: ${LLDAP_LDAP_USER_PASS}
+   
+    password: [inserer password]
+    
+    attributes:
+      display_name: displayName
+      username: uid
+      mail: mail
+    
+    users_filter: "(&(|({username_attribute}={input})({mail_attribute}={input}))(objectClass=person))"
+    groups_filter: "(member={dn})"
 
     ## The dial timeout for LDAP in the duration common syntax.
     # timeout: '20 seconds'
@@ -731,8 +742,8 @@ access_control:
 
   rules:
     ## Rules applied to everyone
-    - domain: "gitlab.techsolutions.com"
-      policy: two_factor
+    - domain: "localhost"
+      policy: 'one_factor'
       subject: "group:gitlab_users"
 
     ## Domain Regex examples. Generally we recommend just using a standard domain.
@@ -814,18 +825,19 @@ access_control:
 session:
   ## The secret to encrypt the session data. This is only used with Redis / Redis Sentinel.
   ## Secret can also be set using a secret: https://www.authelia.com/c/secrets
-  secret: ${AUTHELIA_SESSION_SECRET}
+  secret: '${AUTHELIA_SESSION_SECRET}'
 
   ## Cookies configures the list of allowed cookie domains for sessions to be created on.
   ## Undefined values will default to the values below.
-  cookies:
-    -
-      ## The name of the session cookie.
-      name: authelia_session
 
+  cookies:
+    - name: authelia_session
+      domain: '127.0.0.1'
+      authelia_url: 'https://127.0.0.1:9091'
+      same_site: lax
       ## The domain to protect.
       ## Note: the Authelia portal must also be in that domain.
-      domain: techsolutions.com
+    
 
       ## Required. The fully qualified URI of the portal to redirect users to on proxies that support redirections.
       ## Rules:
@@ -833,8 +845,7 @@ session:
       ##   - The above 'domain' option MUST either:
       ##      - Match the host portion of this URI.
       ##      - Match the suffix of the host portion when prefixed with '.'.
-      authelia_url: https://auth.techsolutions.com
-
+        
       ## Optional. The fully qualified URI used as the redirection location if the portal is accessed directly. Not
       ## configuring this option disables the automatic redirection behaviour.
       ##
@@ -1010,7 +1021,7 @@ storage:
   ## The encryption key that is used to encrypt sensitive information in the database. Must be a string with a minimum
   ## length of 20. Please see the docs if you configure this with an undesirable key and need to change it, you MUST use
   ## the CLI to change this in the database if you want to change it from a previously configured value.
-  encryption_key: ${AUTHELIA_STORAGE_KEY}
+  encryption_key: '${AUTHELIA_STORAGE_KEY}'
 
   ##
   ## Local (Storage Provider)
@@ -1282,7 +1293,7 @@ identity_providers:
   oidc:
     ## The hmac_secret is used to sign OAuth2 tokens (authorization code, access tokens and refresh tokens).
     ## HMAC Secret can also be set using a secret: https://www.authelia.com/c/secrets
-    hmac_secret: ${AUTHELIA_JWT_SECRET}
+    hmac_secret: '${AUTHELIA_JWT_SECRET}'
 
     ## The JWK's issuer option configures multiple JSON Web Keys. It's required that at least one of the JWK's
     ## configured has the RS256 algorithm. For RSA keys (RS or PS) the minimum is a 2048 bit key.
@@ -1300,9 +1311,34 @@ identity_providers:
 
       ## Required Private Key in PEM DER form.
       key: |
-        # -----BEGIN PRIVATE KEY-----
-        # ...
-        # -----END PRIVATE KEY-----
+        -----BEGIN PRIVATE KEY-----
+        MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCs/YHxcCCrcAiU
+        MwTWHWQg0aDO1oLwqyPVA4/moUUf1wDprsidbXJCjPLEmH1wZQsauBpmItdFMgoF
+        CJWeNaw1FJDn7C+25SezKb2LiufmyNhZtzxLFrrXV65n5i7c/O+5WXIoxTXo+6nu
+        3Srzm9hY+hzizbjbgYy20hYkUVTo3iqLEVpPPgJ4Mol3CI8MK9AlFPaTg3AR460e
+        mjWS7ksLzL5dmBbaRuKZJATZW6mSv064nwPEXJ2TdUa025fnqgPH1fxDDvrrLH2t
+        wB7dJYErjYa/OGeN+zhOPhsTfk9yGasDr65kRxzQ5Q3sLKUQAZw4sQN9ze1ToffQ
+        ZJUIGC47AgMBAAECggEAAyw7H+SAlORfI+izpAGx/nAZ1PFWQXfCFnwUPZSjoevd
+        lmugPlLtj47qPPTXCCKyS3Eo+sqUzC4YxPLdW6N8XxTbe4V3cpFNYxnW4iJQEomI
+        fkzADFiEYMK47ironSD+fJXJZDoJvRYwjbL8wK8RDsC3mulPBKehnxDHWy8qsYKp
+        6NdSnNBYh0q3RXFoXepplFMaUb6dYvPXKEnO04k4trcwGGzYw33Wi+tT+s4+QkAV
+        jveLPlXs9NIOeDcybZwoHcuGERTAvZ1eNXnoD/V4S4nGejKyDtwSSKiq7zpwefhR
+        WPdu5DY+qsc6rtuUYibyJQUs3hB1ZDRJsSIkanHlgQKBgQDQn5g1vhe8CMFN/Pmd
+        jHebIdSJIkC+eKOxYYnF3DTKeO1m64yp396XIB6zHIR8XoN5w4DUtzHGcwoU2TMC
+        TLwwkMCtc5YcVJz8cOfhe4XvVU23WapJSmv0Iwrd3zF8zEa+C3ipLRanUqx3rQbA
+        JIDvLFfUfLkY56sBvJAJ1bsZ4QKBgQDURl2Sb0t5M4sYg7X1egAiiiJ5MFDvdFs4
+        n3e028XNQmM3J7o9n/n2wk/iG8gKmK+7mieCkIn6v4LGCHR7BiVB+WVqy3bHFQvr
+        +RfOPD0enSf0CN9r4fzragoCBLnuP2zXZfILrjcWSWyrGZuesbcinpis0suuXtQO
+        Deb0tX3jmwKBgGb3fg54Zgp+X7n4M9MYsye0CMwuRbo8nL49n9wyFTQhfzqe42ws
+        fBYm2kAYwSMJGucMIRfb2wtRWBZ2JQDrkq59ozt4owwUju7hYvEdIDvB5HusG6nU
+        u3dhnElpkWlBAWFnFASbpmSrH0hp87z9x01Em4zaihjKrtJKmOThwljBAoGAFh2u
+        qg8GYf5Iw6kVUBoB4ZdauB2ckRYiWufiZOlw1k3QYHK3KKx+MoNUJ06VrOTziiwp
+        aaT9ey5wxYkj+Z1OTG1bb6D7IwrCTzeIj2gfRg1BmF9ER80nuK83k7ZCWNwqztZE
+        PYtNGflUZQ8p84K4fdbgOUFND0G5/izcnyo5j3kCgYBjKTbXmRuq5CTsVgHi/P5v
+        +/d1De1AaB1Q8AAy+UeI3cIxPYw6kHv08iRecnVQbIWstDLQLk3VOGDqLPiDHd3X
+        bWgEF46DNps9x8CoXfz1nwt4vrD2UyCtkhgu6b+8HQcfNNpT7nkYM63o1zbba3Ee
+        GfGOYICdPOug1X6+XEE/+Q==
+        -----END PRIVATE KEY-----
 
 
       ## Optional matching certificate chain in PEM DER form that matches the key. All certificates within the chain

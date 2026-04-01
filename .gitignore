@@ -1,5 +1,12 @@
+# Variables d'environnement
 .env
+# Certificats
+private.pem
+public.pem
+# Données des services
 infrastructure/authelia/notification.txt
 infrastructure/nginx/data
 infrastructure/db/
-.env
+infrastructure/nextcloud/data
+infrastructure/nextcloud/db
+infrastructure/rocketchat/db

@@ -12,9 +12,9 @@ services:
     container_name: nginx-proxy
     restart: always
     ports:
-      - '80:80'
-      - '81:81'   # Interface de gestion (Admin)
-      - '443:443'
+      - '80:80'   # HTTP
+      - '81:81'   # Interface de gestion du proxy
+      - '443:443' # HTTPS
     volumes:
       - ./infrastructure/nginx/data:/data
       - ./infrastructure/nginx/letsencrypt:/etc/letsencrypt
@@ -26,14 +26,22 @@ services:
     image: 'authelia/authelia:latest'
     container_name: authelia
     restart: always
+    ports:
+      - "9091:9091" # Port pour l'interface d'administration d'Authelia
     volumes:
       - ./infrastructure/authelia:/config
     networks:
       - sso_network
     environment:
       - TZ=America/Montreal
-    
-    # LLDAP (Le serveur d'annuaire pour le bonus)
+      - AUTHELIA_IDENTITY_PROVIDERS_OIDC_HMAC_SECRET=${AUTHELIA_JWT_SECRET}
+      - AUTHELIA_STORAGE_ENCRYPTION_KEY=${AUTHELIA_STORAGE_KEY}
+      - AUTHELIA_SESSION_SECRET=${AUTHELIA_SESSION_SECRET}
+      - LDAP_PASSWORD=${LLDAP_ADMIN_PASSWORD}
+    depends_on:
+      - lldap
+
+  # LLDAP (Le serveur d'annuaire pour le bonus)
   lldap:
     image: 'lldap/lldap:latest'
     container_name: lldap
@@ -46,7 +54,71 @@ services:
     volumes:
       - ./infrastructure/lldap:/data
     ports:
-      - "17170:17170" 
-      - "3890:3890"
+      - "17170:17170"   # Port pour l'interface d'administration de LLDAP
+      - "3890:3890"     # Port pour les requêtes LDAP (3890 au lieu de 389 pour éviter les conflits avec d'autres services)
+    networks:
+      - sso_network
+
+  # Nextcloud (Le service de stockage de fichiers)
+  nextcloud:
+    image: 'nextcloud:latest'
+    container_name: nextcloud
+    restart: always
+    ports:
+      - '8081:80'  # Port HTTP pour Nextcloud (redirigé par Nginx Proxy Manager)
+    volumes:
+      - ./infrastructure/nextcloud/data:/var/www/html # Fichiers de configuration et utilisateurs
+    environment:
+      - MYSQL_DATABASE=nextcloud  # Nom de la base de données
+      - MYSQL_USER=nextcloud_user      # Nom d'utilisateur de la base de données
+      - MYSQL_PASSWORD=${NEXTCLOUD_MYSQL_USER_PASSWORD}   # Mot de passe de l'utilisateur (À changer)
+      - MYSQL_HOST=nextcloud_db   # Nom du service de la base de données dans Docker Compose
+      - PHP_UPLOAD_LIMIT=10G      # limitations ressources pour Nextcloud
+      - PHP_MEMORY_LIMIT=512M
+    networks:
+      - sso_network
+    depends_on:
+      - nextcloud_db
+      - nginx-proxy
+
+  nextcloud_db:
+    image: 'mariadb:latest'
+    container_name: nextcloud_db
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=${NEXTCLOUD_MYSQL_ROOT_PASSWORD} # Mot de passe du root (À changer)
+      - MYSQL_DATABASE=nextcloud  # Nom de la base de données
+      - MYSQL_USER=nextcloud_user      # Nom d'utilisateur de la base de données
+      - MYSQL_PASSWORD=${NEXTCLOUD_MYSQL_USER_PASSWORD}   # Mot de passe de l'utilisateur (À changer)
+    volumes:
+      - ./infrastructure/nextcloud/db:/var/lib/mysql  # Données persistantes de la base de données
+    networks:
+      - sso_network
+
+  # Rocket.Chat (Le service de messagerie instantanée)
+  rocketchat:
+    image: 'rocketchat/rocket.chat:latest'
+    container_name: rocketchat
+    restart: always
+    ports:
+      - '3000:3000' # Port HTTP pour Rocket.Chat
+    environment:
+      - MONGO_URL=mongodb://rocketchat_db:27017/rocketchat  # URL de connexion à la base de données
+      - ROOT_URL=http://localhost:3000             # URL de base pour Rocket.Chat, utilisée pour les liens et redirections
+      - PORT=3000
+    volumes:
+      - ./infrastructure/rocketchat/uploads:/app/uploads    # Données persistantes pour les fichiers téléchargés dans Rocket.Chat
+    networks:
+      - sso_network
+    depends_on:
+      - rocketchat_db
+      - nginx-proxy
+
+  rocketchat_db:
+    image: 'mongo:latest'
+    container_name: rocketchat_db
+    restart: always
+    volumes:
+      - ./infrastructure/rocketchat/db:/data/db # Données persistantes de la base de données
     networks:
       - sso_network
