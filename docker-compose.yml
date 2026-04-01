@@ -52,6 +52,39 @@ services:
     networks:
       - sso_network
 
+  #Gitlab
+  gitlab :
+    image : 'gitlab/gitlab-ce:latest'
+    container_name : gitlab
+    restart : always
+    environment:
+      GITLAB_OMNIBUS_CONFIG: 
+        gitlab_rails['gitlab_shell_ssh_port'] = 2222
+        gitlab_rails['omniauth_enabled'] = true
+        nginx['listen_port'] = 443
+        nginx['listen_https'] = true
+    ports :
+      - "2222:22"
+    volumes :
+      - gitlab-config : ./infrastructure/Gitlab/config
+      - gitlab-logs : ./infrastructure/Gitlab/logs
+      - gitlab-data : ./infrastructure/Gitlab/data
+    networks :
+      - sso_networks
+
+  #Jenkins
+  jenkins:
+    image : 'jenkins/jenkins:lts'
+    container_name: jenkins
+    restart : always
+    user : root
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+    volumes:
+      - jenkins-data : ./infrastructure/Jenkins/data
+    networks :
+      - sso_networks
+
 networks:
   sso_network:
     driver: bridge
