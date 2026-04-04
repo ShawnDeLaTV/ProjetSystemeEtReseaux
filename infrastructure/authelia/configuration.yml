@@ -465,9 +465,6 @@ authentication_backend:
     additional_users_dn: ou=people
     additional_groups_dn: ou=groups
     user: uid=admin,ou=people,dc=techsolutions,dc=com
-   
-    password: [insérer mdp]
-    
     attributes:
       display_name: displayName
       username: uid
@@ -1299,6 +1296,9 @@ identity_providers:
     ## configured has the RS256 algorithm. For RSA keys (RS or PS) the minimum is a 2048 bit key.
     jwks:
     -
+      key: 
+          |
+          [rajouter la clé private.pem ici]
       ## Key ID embedded into the JWT header for key matching. Must be an alphanumeric string with 7 or less characters.
       ## This value is automatically generated if not provided. It's recommended to not configure this.
       # key_id: 'example'
@@ -1310,35 +1310,7 @@ identity_providers:
       # use: 'sig'
 
       ## Required Private Key in PEM DER form.
-      key: |
-        -----BEGIN PRIVATE KEY-----
-        MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCs/YHxcCCrcAiU
-        MwTWHWQg0aDO1oLwqyPVA4/moUUf1wDprsidbXJCjPLEmH1wZQsauBpmItdFMgoF
-        CJWeNaw1FJDn7C+25SezKb2LiufmyNhZtzxLFrrXV65n5i7c/O+5WXIoxTXo+6nu
-        3Srzm9hY+hzizbjbgYy20hYkUVTo3iqLEVpPPgJ4Mol3CI8MK9AlFPaTg3AR460e
-        mjWS7ksLzL5dmBbaRuKZJATZW6mSv064nwPEXJ2TdUa025fnqgPH1fxDDvrrLH2t
-        wB7dJYErjYa/OGeN+zhOPhsTfk9yGasDr65kRxzQ5Q3sLKUQAZw4sQN9ze1ToffQ
-        ZJUIGC47AgMBAAECggEAAyw7H+SAlORfI+izpAGx/nAZ1PFWQXfCFnwUPZSjoevd
-        lmugPlLtj47qPPTXCCKyS3Eo+sqUzC4YxPLdW6N8XxTbe4V3cpFNYxnW4iJQEomI
-        fkzADFiEYMK47ironSD+fJXJZDoJvRYwjbL8wK8RDsC3mulPBKehnxDHWy8qsYKp
-        6NdSnNBYh0q3RXFoXepplFMaUb6dYvPXKEnO04k4trcwGGzYw33Wi+tT+s4+QkAV
-        jveLPlXs9NIOeDcybZwoHcuGERTAvZ1eNXnoD/V4S4nGejKyDtwSSKiq7zpwefhR
-        WPdu5DY+qsc6rtuUYibyJQUs3hB1ZDRJsSIkanHlgQKBgQDQn5g1vhe8CMFN/Pmd
-        jHebIdSJIkC+eKOxYYnF3DTKeO1m64yp396XIB6zHIR8XoN5w4DUtzHGcwoU2TMC
-        TLwwkMCtc5YcVJz8cOfhe4XvVU23WapJSmv0Iwrd3zF8zEa+C3ipLRanUqx3rQbA
-        JIDvLFfUfLkY56sBvJAJ1bsZ4QKBgQDURl2Sb0t5M4sYg7X1egAiiiJ5MFDvdFs4
-        n3e028XNQmM3J7o9n/n2wk/iG8gKmK+7mieCkIn6v4LGCHR7BiVB+WVqy3bHFQvr
-        +RfOPD0enSf0CN9r4fzragoCBLnuP2zXZfILrjcWSWyrGZuesbcinpis0suuXtQO
-        Deb0tX3jmwKBgGb3fg54Zgp+X7n4M9MYsye0CMwuRbo8nL49n9wyFTQhfzqe42ws
-        fBYm2kAYwSMJGucMIRfb2wtRWBZ2JQDrkq59ozt4owwUju7hYvEdIDvB5HusG6nU
-        u3dhnElpkWlBAWFnFASbpmSrH0hp87z9x01Em4zaihjKrtJKmOThwljBAoGAFh2u
-        qg8GYf5Iw6kVUBoB4ZdauB2ckRYiWufiZOlw1k3QYHK3KKx+MoNUJ06VrOTziiwp
-        aaT9ey5wxYkj+Z1OTG1bb6D7IwrCTzeIj2gfRg1BmF9ER80nuK83k7ZCWNwqztZE
-        PYtNGflUZQ8p84K4fdbgOUFND0G5/izcnyo5j3kCgYBjKTbXmRuq5CTsVgHi/P5v
-        +/d1De1AaB1Q8AAy+UeI3cIxPYw6kHv08iRecnVQbIWstDLQLk3VOGDqLPiDHd3X
-        bWgEF46DNps9x8CoXfz1nwt4vrD2UyCtkhgu6b+8HQcfNNpT7nkYM63o1zbba3Ee
-        GfGOYICdPOug1X6+XEE/+Q==
-        -----END PRIVATE KEY-----
+      
 
 
       ## Optional matching certificate chain in PEM DER form that matches the key. All certificates within the chain
