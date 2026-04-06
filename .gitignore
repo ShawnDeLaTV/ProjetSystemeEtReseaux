@@ -17,7 +17,9 @@ infrastructure/gitlab/logs
 # Jenkins
 infrastructure/jenkins/data
 # Nextcloud
-infrastructure/nextcloud/data
+infrastructure/nextcloud/data/*
+# Dossier de configuration de Nextcloud
+!infrastructure/nextcloud/data/config
 infrastructure/nextcloud/db
 # Rocket.Chat
 infrastructure/rocketchat/db
