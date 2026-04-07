@@ -24,6 +24,8 @@ services:
     image: 'authelia/authelia:latest'
     container_name: authelia
     restart: always
+    ports:
+      - '9091:9091'
     volumes:
       - ./infrastructure/authelia:/config
       - ./secrets:/config/secrets
@@ -32,6 +34,8 @@ services:
     environment:
       - TZ=America/Montreal
       - AUTHELIA_CONFIG_EXPERIMENTAL_FILTERS=expand-env
+      - AUTHELIA_SESSION_COOKIES_INSECURE=true
+      - AUTHELIA_SERVER_DISABLE_HEALTHCHECK=true
 
       - AUTHELIA_IDENTITY_PROVIDERS_OIDC_HMAC_SECRET=${AUTHELIA_JWT_SECRET}
       - AUTHELIA_IDENTITY_PROVIDERS_OIDC_JWKS_0_KEY=${AUTHELIA_OIDC_PRIVATE_KEY}

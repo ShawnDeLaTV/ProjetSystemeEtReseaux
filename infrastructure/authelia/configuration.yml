@@ -859,11 +859,15 @@ session:
 
   ## Cookies configures the list of allowed cookie domains for sessions to be created on.
   ## Undefined values will default to the values below.
+  same_site: 'lax'
+  inactivity: '5m'
+  expiration: '1h'
+  remember_me: '1M'
 
   cookies:
-    - name: authelia_session
-      domain: '127.0.0.1'
+    - domain: '127.0.0.1'
       authelia_url: 'https://127.0.0.1:9091'
+      default_redirection_url: 'https://127.0.0.1:9091/home'
       same_site: lax
       ## The domain to protect.
       ## Note: the Authelia portal must also be in that domain.
@@ -1343,7 +1347,7 @@ identity_providers:
     -
       key: 
           |
-          [ajouter ici clé private.pem]
+      [ajouter ici la clé privée au format PEM DER]
 
       ## Key ID embedded into the JWT header for key matching. Must be an alphanumeric string with 7 or less characters.
       ## This value is automatically generated if not provided. It's recommended to not configure this.
