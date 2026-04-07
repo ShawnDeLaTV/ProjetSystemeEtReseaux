@@ -386,13 +386,16 @@ identity_validation:
 ##
 ## The definitions are used in other areas as reference points to reduce duplication.
 ##
-# definitions:
+definitions:
   ## The user attribute definitions.
-  # user_attributes:
+  user_attributes:
     ## The name of the definition.
     # definition_name:
       ## The common expression language expression for this definition.
       # expression: ''
+    is_nextcloud_admin:
+      ## Expression to evaluate admin privilege for Nextcloud.
+      expression: '"nextcloud-admins" in groups'
 
   ## The network definitions.
   # network:
@@ -1322,6 +1325,18 @@ identity_providers:
     ## HMAC Secret can also be set using a secret: https://www.authelia.com/c/secrets
     hmac_secret: '${AUTHELIA_JWT_SECRET}'
 
+    # -- Partie pour Nextcloud -- 
+    claims_policies:
+      nextcloud_userinfo:
+        custom_claims:
+          is_nextcloud_admin: {}
+
+    scopes:
+      nextcloud_userinfo:
+        claims:
+          - 'is_nextcloud_admin'
+    # -- Fin partie pour Nextcloud --
+
     ## The JWK's issuer option configures multiple JSON Web Keys. It's required that at least one of the JWK's
     ## configured has the RS256 algorithm. For RSA keys (RS or PS) the minimum is a 2048 bit key.
     jwks:
@@ -1329,6 +1344,7 @@ identity_providers:
       key: 
           |
           [rajouter la clé private.pem ici]
+
       ## Key ID embedded into the JWT header for key matching. Must be an alphanumeric string with 7 or less characters.
       ## This value is automatically generated if not provided. It's recommended to not configure this.
       # key_id: 'example'
@@ -1708,4 +1724,52 @@ identity_providers:
               # -----BEGIN CERTIFICATE-----
               # ...
               # -----END CERTIFICATE-----
+
+      # NEXTCLOUD
+      - client_id: 'nextcloud'
+        client_name: 'NextCloud'
+        client_secret: '$pbkdf2-sha512$310000$c8p78n7pUMln0jzvd4aK4Q$JNRBzwAo0ek5qKn50cFzzvE9RXV88h1wJn5KGiHrD0YKtZaR/nCb2CJPOsKaPK0hjf.9yHxzQGZziziccp6Yng'  # The digest of 'insecure_secret'.
+        public: false
+        authorization_policy: 'two_factor'
+        require_pkce: true
+        pkce_challenge_method: 'S256'
+        claims_policy: 'nextcloud_userinfo'
+        redirect_uris:
+          - 'https://nextcloud.example.com/apps/oidc_login/oidc'
+        scopes:
+          - 'openid'
+          - 'profile'
+          - 'email'
+          - 'groups'
+          - 'nextcloud_userinfo'
+        response_types:
+          - 'code'
+        grant_types:
+          - 'authorization_code'
+        access_token_signed_response_alg: 'none'
+        userinfo_signed_response_alg: 'none'
+        token_endpoint_auth_method: 'client_secret_basic'
+
+      # RocketChat
+      - client_id: 'rocketchat'
+        client_name: 'Rocket.Chat'
+        client_secret: '$pbkdf2-sha512$310000$c8p78n7pUMln0jzvd4aK4Q$JNRBzwAo0ek5qKn50cFzzvE9RXV88h1wJn5KGiHrD0YKtZaR/nCb2CJPOsKaPK0hjf.9yHxzQGZziziccp6Yng'  # The digest of 'insecure_secret'.
+        public: false
+        authorization_policy: 'two_factor'
+        require_pkce: false
+        pkce_challenge_method: ''
+        redirect_uris:
+          - 'https://rocket-chat.example.com/_oauth/authelia'
+        scopes:
+          - 'openid'
+          - 'profile'
+          - 'email'
+          - 'groups'
+        response_types:
+          - 'code'
+        grant_types:
+          - 'authorization_code'
+        access_token_signed_response_alg: 'none'
+        userinfo_signed_response_alg: 'none'
+        token_endpoint_auth_method: 'client_secret_post'
 ...
