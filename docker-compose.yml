@@ -102,8 +102,6 @@ services:
       - '8081:80'  # Port HTTP pour Nextcloud (redirigé par Nginx Proxy Manager)
     volumes:
       - ./infrastructure/nextcloud/data:/var/www/html # Fichiers de configuration et utilisateurs
-      - ./infrastructure/nextcloud/install-apps.sh:/docker-entrypoint-hooks.d/before-starting/install-apps.sh # Script pour installer les applications Nextcloud au démarrage
-
     environment:
       - MYSQL_DATABASE=nextcloud  # Nom de la base de données
       - MYSQL_USER=nextcloud_user      # Nom d'utilisateur de la base de données
