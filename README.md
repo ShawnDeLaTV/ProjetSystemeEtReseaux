@@ -6,7 +6,7 @@
 Quand l'installation est terminée, cliquez sur votre profil, allez dans l'onglet `Application`puis chercher et installez l'application `OpenID Connect Login` dans la section `Social & communication`.
 
 2. Ajoutez les lignes suivantes dans le fichier de configuration Nextcloud (`infrastructure/nextcloud/data/config/config.php`) :
-   
+
     ```php
       'allow_user_to_change_display_name' => false,
       'lost_password_link' => 'disabled',
@@ -41,7 +41,52 @@ Quand l'installation est terminée, cliquez sur votre profil, allez dans l'ongle
       'oidc_login_update_avatar' => false,
       'oidc_login_code_challenge_method' => 'S256'
     ```
-    
+
     Pensez bien à modifier l'url d'authélia selon votre configuration.
+
+Lors de votre prochain passage sur la page de connexion, vous devriez voir un bouton `Log in with Authelia`
+
+## Rocket.Chat
+
+1. Ouvrez Rocket.Chat et connectez-vous avec votre compte admin.
+
+2. Allez dans Manage puis Paramètres et cherchez le menu OAuth.
+
+3. Cliquez sur `Ajouter OAuth personalisé` et nommez la `authelia`.
+
+4. Allez en bas de la page, vous devriez avoir une section `Custom OAuth: Authelia` (si non rafraichissez la page).  
+    Activez cette méthode de connexion et modifiez les paramètres suivants :
+
+    - URL: `https://auth.example.com`
+    - Token Path: `/api/oidc/token`
+    - Token sent via: `Payload`
+    - Identity Token Sent Via: `Same as "Token Sent Via"`
+    - Identity Path: `/api/oidc/userinfo`
+    - Authorize Path: `/api/oidc/authorization`
+    - Scope: `openid profile email groups`
+    - Param Name for Access Token: `access_token`
+    - Id: `rocketchat`
+    - Secret: `insecure_secret`
+    - Login Style: `Redirect`
+    - Button Text: `Log in with Authelia`
+    - Key Field: `Username`
+    - Username field: `preferred_username`
+    - Email field: `email`
+    - Name field: `name`
+    - Roles/Groups field name: `groups`
+    - Roles/Groups field for channel mapping: `groups`
+    - Merge users: `On`
+    - Show Button on Login Page: `On`
+
+    Penssez bien à modifier l'url d'authelia et le secret selon votre configuration
+
+5. Si vous souhaitez lier les rôles Authelia aux rôles Rocket.Chat, activez l'option `Map Roles/Groups to channels` et décrivez le mapping dans le champs `OAuth Group Channel Map` suivant le schémat `"role_authelia": "role_rocketchat"` tel que :
+
+    ```json
+    {
+      "rocket-admin": "admin",    // Si l'utilisateur à le rôle "rocket-admin" dans Authelia, il aura automatiquement le rôle "admin" dans Rocket.Chat
+      "tech-support": "support"
+    }
+    ```
 
 Lors de votre prochain passage sur la page de connexion, vous devriez voir un bouton `Log in with Authelia`
