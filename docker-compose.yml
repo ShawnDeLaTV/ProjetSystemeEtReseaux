@@ -65,13 +65,32 @@ services:
     restart : always
     environment:
       GITLAB_OMNIBUS_CONFIG: |
-        external_url 'https://gitlab.mondomaine.com'
         gitlab_rails['gitlab_shell_ssh_port'] = 2222
         gitlab_rails['omniauth_enabled'] = true
+        gitlab_rails['omniauth_allow_single_sign_on'] = ['openid_connect'];
+        gitlab_rails['omniauth_block_auto_created_users'] = false;
+        gitlab_rails['omniauth_providers'] = [
+          {
+            'name' => 'openid_connect',
+            'label' => 'Authelia',
+            'args' => {
+              'name' => 'openid_connect',
+              'scope' => ['openid', 'email', 'groups', 'profile'],
+              'response_type' => 'code',
+              'issuer' => 'https://authelia:9091', #lien authelia
+              'discovery' => true,
+              'client_auth_method' => 'query',
+              'uid_field' => 'preferred_username',
+              'client_id' => 'gitlab', 
+              'client_secret' => ''  #mdp authelia
+            }
+          }
+        ];
         nginx['listen_port'] = 80
         nginx['listen_https'] = false
     ports :
-      - "2222:22"
+      - "32000:22"
+      - "37000:80"
     volumes :
       - ./infrastructure/Gitlab/config:/etc/gitlab
       - ./infrastructure/Gitlab/logs:/var/log/gitlab
@@ -87,6 +106,9 @@ services:
     user : root
     environment:
       - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+    ports : 
+      - "37001:8080"
+      - "38001:50000"
     volumes:
       - ./infrastructure/Jenkins/data:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
