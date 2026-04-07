@@ -742,6 +742,36 @@ access_control:
     - domain: "localhost"
       policy: 'one_factor'
       subject: "group:gitlab_users"
+    
+    - domain: 'gitlab.techsolutions.com'
+      policy: 'two_factor'
+      subject:
+        - 'group:gitlab_users'
+
+    - domain: 'jenkins.techsolutions.com'
+      policy: 'two_factor'
+      subject:
+        - 'group:jenkins_users'
+
+    - domain: 'nextcloud.techsolutions.com'
+      policy: 'two_factor'
+      subject:
+        - 'group:nextcloud_users'
+
+    - domain: 'jira.techsolutions.com'
+      policy: 'two_factor'
+      subject:
+        - 'group:jira_users'
+
+    - domain: 'confluence.techsolutions.com'
+      policy: 'two_factor'
+      subject:
+        - 'group:confluence_users'
+
+    - domain: 'rocketchat.techsolutions.com'
+      policy: 'two_factor'
+      subject:
+        - 'group:rocketchat_users'
 
     ## Domain Regex examples. Generally we recommend just using a standard domain.
     # - domain_regex: '^(?P<User>\w+)\.example\.com$'
