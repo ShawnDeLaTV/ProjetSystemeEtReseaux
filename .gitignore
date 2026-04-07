@@ -27,3 +27,6 @@ infrastructure/jira/data
 # Confluence
 infrastructure/confluence/db
 infrastructure/confluence/data
+
+# --- Secrets ---
+secrets/

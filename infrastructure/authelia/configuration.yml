@@ -1343,7 +1343,7 @@ identity_providers:
     -
       key: 
           |
-          [rajouter la clé private.pem ici]
+          [ajouter ici clé private.pem]
 
       ## Key ID embedded into the JWT header for key matching. Must be an alphanumeric string with 7 or less characters.
       ## This value is automatically generated if not provided. It's recommended to not configure this.
@@ -1444,10 +1444,9 @@ identity_providers:
 
         ## The description to show to users when they end up on the consent screen. Defaults to the ID above.
         client_name: 'GitLab TechSolutions'
-
+        client_secret: '{{ secret "gitlab_secret" }}'
         ## The client secret is a shared secret between Authelia and the consumer of this client.
         # yamllint disable-line rule:line-length
-        client_secret: '$pbkdf2-sha512$310000$c8p78n7pUMln0jzvd4aK4Q$JNRBzwAo0ek5qKn50cFzzvE9RXV88h1wJn5KGiHrD0YKtZaR/nCb2CJPOsKaPK0hjf.9yHxzQGZziziccp6Yng'  # The digest of 'insecure_secret'.
 
         ## Sector Identifiers are occasionally used to generate pairwise subject identifiers. In most cases this is not
         ## necessary. It is critical to read the documentation for more information.
@@ -1494,6 +1493,7 @@ identity_providers:
         ## authorization policies section.
         authorization_policy: 'two_factor'
 
+      
         ## The custom lifespan name to use for this client. This must be configured independent of the client before
         ## utilization. Custom lifespans are reusable similar to authorization policies.
         # lifespan: ''
@@ -1724,11 +1724,36 @@ identity_providers:
               # -----BEGIN CERTIFICATE-----
               # ...
               # -----END CERTIFICATE-----
-
+      #JENKINS
+      - client_id: 'jenkins'
+        client_name: 'Jenkins TechSolutions'
+        client_secret: '{{ secret "jenkins_secret" }}'
+        public: false
+        authorization_policy: 'two_factor'
+        scopes:
+          - 'openid'
+          - 'groups'
+          - 'email'
+          - 'profile'
+        redirect_uris:
+          - 'https://jenkins.techsolutions.com/securityRealm/finishLogin'
+      #JIRA
+      - client_id: 'jira'
+        client_name: 'JIRA TechSolutions'
+        client_secret: '{{ secret "jira_secret" }}'
+        public: false
+        authorization_policy: 'two_factor'
+        scopes:
+          - 'openid'
+          - 'groups'
+          - 'email'
+          - 'profile'
+        redirect_uris:
+          - 'https://jira.techsolutions.com/plugins/servlet/oidc/callback'
       # NEXTCLOUD
       - client_id: 'nextcloud'
         client_name: 'NextCloud'
-        client_secret: '$pbkdf2-sha512$310000$c8p78n7pUMln0jzvd4aK4Q$JNRBzwAo0ek5qKn50cFzzvE9RXV88h1wJn5KGiHrD0YKtZaR/nCb2CJPOsKaPK0hjf.9yHxzQGZziziccp6Yng'  # The digest of 'insecure_secret'.
+        client_secret: '{{ secret "nextcloud_secret" }}'
         public: false
         authorization_policy: 'two_factor'
         require_pkce: true
@@ -1753,7 +1778,7 @@ identity_providers:
       # RocketChat
       - client_id: 'rocketchat'
         client_name: 'Rocket.Chat'
-        client_secret: '$pbkdf2-sha512$310000$c8p78n7pUMln0jzvd4aK4Q$JNRBzwAo0ek5qKn50cFzzvE9RXV88h1wJn5KGiHrD0YKtZaR/nCb2CJPOsKaPK0hjf.9yHxzQGZziziccp6Yng'  # The digest of 'insecure_secret'.
+        client_secret: '{{ secret "rocketchat_secret" }}'
         public: false
         authorization_policy: 'two_factor'
         require_pkce: false

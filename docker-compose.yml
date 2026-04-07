@@ -26,10 +26,13 @@ services:
     restart: always
     volumes:
       - ./infrastructure/authelia:/config
+      - ./secrets:/config/secrets
     networks:
       - sso_network
     environment:
       - TZ=America/Montreal
+      - AUTHELIA_CONFIG_EXPERIMENTAL_FILTERS=expand-env
+
       - AUTHELIA_IDENTITY_PROVIDERS_OIDC_HMAC_SECRET=${AUTHELIA_JWT_SECRET}
       - AUTHELIA_IDENTITY_PROVIDERS_OIDC_JWKS_0_KEY=${AUTHELIA_OIDC_PRIVATE_KEY}
       - AUTHELIA_STORAGE_ENCRYPTION_KEY=${AUTHELIA_STORAGE_KEY}
