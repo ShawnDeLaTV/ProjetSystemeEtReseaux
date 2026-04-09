@@ -5,11 +5,16 @@
 private.pem
 public.pem
 
+# Certificats tls
+cert.pem
+key.pem
+
 # --- Données des services ---
 # Authelia
 infrastructure/authelia/notification.txt
 # Nginx
 infrastructure/nginx/data
+infrastructure/nginx/letsencrypt
 # Gitlab
 infrastructure/gitlab/config
 infrastructure/gitlab/data
