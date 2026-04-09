@@ -1,0 +1,11 @@
+jenkins:
+  securityRealm:
+    oic:
+      clientId: "${OIC_CLIENT_ID}"
+      clientSecret: "${OIC_CLIENT_SECRET}"
+      wellKnownOpenIDConfigurationUrl: ""
+      userNameField: "preferred_username"
+      scopes: "openid email profile group"
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
