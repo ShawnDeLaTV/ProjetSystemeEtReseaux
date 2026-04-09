@@ -81,8 +81,8 @@ services:
               'discovery' => true,
               'client_auth_method' => 'query',
               'uid_field' => 'preferred_username',
-              'client_id' => ${OIDC_CLIENT_ID_GITLAB}, 
-              'client_secret' => ${OIDC_CLIENT_SECRET_GITLAB} 
+              'client_id' => '${OIDC_CLIENT_ID_GITLAB}', 
+              'client_secret' => '${OIDC_CLIENT_SECRET_GITLAB}' 
             }
           }
         ];
