@@ -16,6 +16,7 @@ infrastructure/gitlab/data
 infrastructure/gitlab/logs
 # Jenkins
 infrastructure/jenkins/data
+infrastructure/jenkins/jenkins.yaml
 # Nextcloud
 infrastructure/nextcloud/data
 infrastructure/nextcloud/db
@@ -27,3 +28,5 @@ infrastructure/jira/data
 # Confluence
 infrastructure/confluence/db
 infrastructure/confluence/data
+
+secrets/
