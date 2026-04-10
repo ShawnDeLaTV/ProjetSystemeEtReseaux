@@ -63,31 +63,7 @@ services:
     image : 'gitlab/gitlab-ce:latest'
     container_name : gitlab
     restart : always
-    environment:
-      GITLAB_OMNIBUS_CONFIG: |
-        gitlab_rails['gitlab_shell_ssh_port'] = 2222
-        gitlab_rails['omniauth_enabled'] = true
-        gitlab_rails['omniauth_allow_single_sign_on'] = ['openid_connect'];
-        gitlab_rails['omniauth_block_auto_created_users'] = false;
-        gitlab_rails['omniauth_providers'] = [
-          {
-            'name' => 'openid_connect',
-            'label' => 'Authelia',
-            'args' => {
-              'name' => 'openid_connect',
-              'scope' => ['openid', 'email', 'groups', 'profile'],
-              'response_type' => 'code',
-              'issuer' => 'https://authelia:9091', #lien authelia
-              'discovery' => true,
-              'client_auth_method' => 'query',
-              'uid_field' => 'preferred_username',
-              'client_id' => '${OIDC_CLIENT_ID_GITLAB}', 
-              'client_secret' => '${OIDC_CLIENT_SECRET_GITLAB}' 
-            }
-          }
-        ];
-        nginx['listen_port'] = 80
-        nginx['listen_https'] = false
+
     ports :
       - "32000:22"
       - "37000:80"
@@ -108,8 +84,6 @@ services:
     user : root
     environment:
       - CASC_JENKINS_CONFIG=/var/jenkins_home/casc_configs
-      - OIDC_CLIENT_ID=${OIDC_CLIENT_ID_JENKINS}
-      - OIDC_CLIENT_SECRET=${OIDC_CLIENT_SECRET_JENKINS}
     ports : 
       - "37001:8080"
       - "38001:50000"
