@@ -42,7 +42,7 @@ Quand l'installation est terminée, cliquez sur votre profil, allez dans l'ongle
       'oidc_login_code_challenge_method' => 'S256'
     ```
 
-    Pensez bien à modifier l'url d'authélia selon votre configuration.
+    Pensez bien à modifier l'url d'authélia et à remplacer `insecure_secret` par le secret du client corresondant dans votre configuration authelia.
 
 Lors de votre prochain passage sur la page de connexion, vous devriez voir un bouton `Log in with Authelia`
 
@@ -78,7 +78,7 @@ Lors de votre prochain passage sur la page de connexion, vous devriez voir un bo
     - Merge users: `On`
     - Show Button on Login Page: `On`
 
-    Penssez bien à modifier l'url d'authelia et le secret selon votre configuration
+    Penssez bien à modifier l'url d'authelia et à remplacer `insecure_secret` par le secret du client corresondant dans votre configuration authelia.
 
 5. Si vous souhaitez lier les rôles Authelia aux rôles Rocket.Chat, activez l'option `Map Roles/Groups to channels` et décrivez le mapping dans le champs `OAuth Group Channel Map` suivant le schémat `"role_authelia": "role_rocketchat"` tel que :
 
@@ -90,3 +90,25 @@ Lors de votre prochain passage sur la page de connexion, vous devriez voir un bo
     ```
 
 Lors de votre prochain passage sur la page de connexion, vous devriez voir un bouton `Log in with Authelia`
+
+## LibreDesk
+
+### Fin de l'installation
+
+1. Téléchargez le fichier suivant : `https://github.com/abhinavxd/libredesk/raw/main/config.sample.toml`.
+2. Créez une copie que vous nommez `config.toml` et placez la dans le dossier `infrastructure/libredesk`.
+3. Modifiez les valeurs pour correspondre à votre configuration.
+
+### Configuration du SSO
+
+1. Allez dans les paramètres admin de LibreDesk, Security, puis SSO.
+2. Cliquez sur `New SSO`, choisissez `Custom` pour le fournisseur puis entrez les informations suivantes :
+
+    - Name: `Autelia`
+    - Provider URL: `https://auth.example.com`
+    - Client ID: `libredesk`
+    - Client secret: `insecure_secret`
+
+    Penssez bien à modifier l'url d'authelia et à remplacer `insecure_secret` par le secret du client corresondant dans votre configuration authelia.
+
+3. Validez en cliquant sur `Save`. LibreDesk va tester la connexion avec le fournisseur d'identité pour valider le SSO.

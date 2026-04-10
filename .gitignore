@@ -21,12 +21,11 @@ infrastructure/nextcloud/data
 infrastructure/nextcloud/db
 # Rocket.Chat
 infrastructure/rocketchat/db
-# Jira
-infrastructure/jira/db
-infrastructure/jira/data
-# Confluence
-infrastructure/confluence/db
-infrastructure/confluence/data
+# LibreDesk
+infrastructure/libredesk/config.toml
+infrastructure/libredesk/uploads
+infrastructure/libredesk/postgres-data
+infrastructure/libredesk/redis-data
 
 # --- Secrets ---
 secrets/

@@ -1347,7 +1347,7 @@ identity_providers:
     -
       key: 
           |
-      [ajouter ici la clé privée au format PEM DER]
+          [ajouter ici la clé privée au format PEM DER]
 
       ## Key ID embedded into the JWT header for key matching. Must be an alphanumeric string with 7 or less characters.
       ## This value is automatically generated if not provided. It's recommended to not configure this.
@@ -1728,6 +1728,7 @@ identity_providers:
               # -----BEGIN CERTIFICATE-----
               # ...
               # -----END CERTIFICATE-----
+
       #JENKINS
       - client_id: 'jenkins'
         client_name: 'Jenkins TechSolutions'
@@ -1741,19 +1742,7 @@ identity_providers:
           - 'profile'
         redirect_uris:
           - 'https://jenkins.techsolutions.com/securityRealm/finishLogin'
-      #JIRA
-      - client_id: 'jira'
-        client_name: 'JIRA TechSolutions'
-        client_secret: '{{ secret "jira_secret" }}'
-        public: false
-        authorization_policy: 'two_factor'
-        scopes:
-          - 'openid'
-          - 'groups'
-          - 'email'
-          - 'profile'
-        redirect_uris:
-          - 'https://jira.techsolutions.com/plugins/servlet/oidc/callback'
+
       # NEXTCLOUD
       - client_id: 'nextcloud'
         client_name: 'NextCloud'
@@ -1764,7 +1753,7 @@ identity_providers:
         pkce_challenge_method: 'S256'
         claims_policy: 'nextcloud_userinfo'
         redirect_uris:
-          - 'https://nextcloud.example.com/apps/oidc_login/oidc'
+          - 'http://localhost:8081/apps/oidc_login/oidc'
         scopes:
           - 'openid'
           - 'profile'
@@ -1788,7 +1777,30 @@ identity_providers:
         require_pkce: false
         pkce_challenge_method: ''
         redirect_uris:
-          - 'https://rocket-chat.example.com/_oauth/authelia'
+          - 'http://localhost:3000/_oauth/authelia'
+        scopes:
+          - 'openid'
+          - 'profile'
+          - 'email'
+          - 'groups'
+        response_types:
+          - 'code'
+        grant_types:
+          - 'authorization_code'
+        access_token_signed_response_alg: 'none'
+        userinfo_signed_response_alg: 'none'
+        token_endpoint_auth_method: 'client_secret_post'
+
+      # LibreDesk
+      - client_id: 'libredesk'
+        client_name: 'LibreDesk'
+        client_secret: '{{ secret "libredesk_secret" }}'
+        public: false
+        authorization_policy: 'two_factor'
+        require_pkce: false
+        pkce_challenge_method: ''
+        redirect_uris:
+          - 'http://localhost:9000/_oauth/authelia'
         scopes:
           - 'openid'
           - 'profile'
