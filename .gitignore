@@ -16,6 +16,7 @@ infrastructure/gitlab/data
 infrastructure/gitlab/logs
 # Jenkins
 infrastructure/jenkins/data
+infrastructure/jenkins/jenkins.yaml
 # Nextcloud
 infrastructure/nextcloud/data
 infrastructure/nextcloud/db
@@ -28,4 +29,4 @@ infrastructure/libredesk/postgres-data
 infrastructure/libredesk/redis-data
 
 # --- Secrets ---
-secrets/
+secrets
