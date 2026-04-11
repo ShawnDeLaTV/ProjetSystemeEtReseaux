@@ -2,7 +2,7 @@
 
 ## Nextcloud
 
-Ajoutez les lignes suivantes dans le fichier de configuration Nextcloud (`infrastructure/nextcloud/data/config/config.php`) :
+Après avoir lancé le docker-compose, ajoutez les lignes suivantes dans le fichier de configuration Nextcloud (`infrastructure/nextcloud/data/config/config.php`) :
 
 ```php
   'allow_user_to_change_display_name' => false,
