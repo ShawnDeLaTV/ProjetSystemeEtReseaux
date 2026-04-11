@@ -6,3 +6,4 @@ php occ maintenance:install --database "mysql" --database-host "$MYSQL_HOST" --d
 # Installation de l'application OIDC
 echo "Installation de l'application OIDC..."
 php occ app:install oidc_login
+php occ app:enable oidc_login
