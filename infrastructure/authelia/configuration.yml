@@ -761,15 +761,10 @@ access_control:
       subject:
         - 'group:nextcloud_users'
 
-    - domain: 'jira.techsolutions.com'
+    - domain: 'libredesk.techsolutions.com'
       policy: 'two_factor'
       subject:
-        - 'group:jira_users'
-
-    - domain: 'confluence.techsolutions.com'
-      policy: 'two_factor'
-      subject:
-        - 'group:confluence_users'
+        - 'group:libredesk_users'
 
     - domain: 'rocketchat.techsolutions.com'
       policy: 'two_factor'
