@@ -110,11 +110,14 @@ services:
       - '8081:80'  # Port HTTP pour Nextcloud (redirigé par Nginx Proxy Manager)
     volumes:
       - ./infrastructure/nextcloud/data:/var/www/html # Fichiers de configuration et utilisateurs
+      - ./infrastructure/nextcloud/before-starting:/docker-entrypoint-hooks.d/before-starting # Hook pour initialiser Nextcloud
     environment:
       - MYSQL_DATABASE=nextcloud  # Nom de la base de données
       - MYSQL_USER=nextcloud_user      # Nom d'utilisateur de la base de données
       - MYSQL_PASSWORD=${NEXTCLOUD_MYSQL_USER_PASSWORD}   # Mot de passe de l'utilisateur
       - MYSQL_HOST=nextcloud_db   # Nom du service de la base de données dans Docker Compose
+      - NEXTCLOUD_ADMIN_USER=${NEXTCLOUD_ADMIN_USER}  # Nom d'utilisateur de l'administrateur Nextcloud
+      - NEXTCLOUD_ADMIN_PASSWORD=${NEXTCLOUD_ADMIN_PASSWORD}  # Mot de passe de l'administrateur Nextcloud
       - PHP_UPLOAD_LIMIT=10G      # limitations ressources pour Nextcloud
       - PHP_MEMORY_LIMIT=512M
     networks:
