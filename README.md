@@ -2,7 +2,11 @@
 
 ## Nextcloud
 
-Après avoir lancé le docker-compose, ajoutez les lignes suivantes dans le fichier de configuration Nextcloud (`infrastructure/nextcloud/data/config/config.php`) :
+1. Ouvrez git bash dans le dossier `infrastructure/nextcloud/before-starting` (Clique droit, Afficher d'autres options, Open Git Bash here).
+
+2. Effectuez la commande `dos2unix setup.sh` pour mettre le script au bon format.
+
+3. Après avoir lancé le docker-compose, ajoutez les lignes suivantes dans le fichier de configuration Nextcloud (`infrastructure/nextcloud/data/config/config.php`) :
 
 ```php
   'allow_user_to_change_display_name' => false,
