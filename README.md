@@ -119,31 +119,31 @@ Lors de votre prochain passage sur la page de connexion, vous devriez voir un bo
 Avant de lancer le conteneur, il faut s'assurer que la configuration suivante est ajouté dans le fichier ./infrastructure/Gitlab/config/gitlab.rb
 
  ```
-gitlab\_rails\['omniauth\_providers'] = \[
-{
-name: "openid\_connect",
-label: "Authelia",
-icon: "https://www.authelia.com/images/branding/logo-cropped.png",
-args: {
-    name: "openid\_connect",
-    strategy\_class: "OmniAuth::Strategies::OpenIDConnect",
-    issuer: "https://auth.tp-sso.local",
-    discovery: true,
-    scope: \["openid","profile","email","groups"],
-    client\_auth\_method: "basic",
-    response\_type: "code",
-    response\_mode: "query",
-    uid\_field: "preferred\_username",
-    send\_scope\_to\_token\_endpoint: true,
-    pkce: true,
-    client\_options: {
-    identifier: "gitlab",
-    secret: "insecure-secret",
-    redirect\_uri: "https://gitlab.tp-sso.local/users/auth/openid\_connect/callback"
-        }
+gitlab_rails['omniauth_providers'] = [
+  {
+    name: "openid_connect",
+    label: "Authelia",
+    icon: "https://www.authelia.com/images/branding/logo-cropped.png",
+    args: {
+      name: "openid_connect",
+      strategy_class: "OmniAuth::Strategies::OpenIDConnect",
+      issuer: "https://auth.tp-sso.local",
+      discovery: true,
+      scope: ["openid","profile","email","groups"],
+      client_auth_method: "basic",
+      response_type: "code",
+      response_mode: "query",
+      uid_field: "preferred_username",
+      send_scope_to_token_endpoint: true,
+      pkce: true,
+      client_options: {
+        identifier: "gitlab",
+        secret: "insecure_secret",
+        redirect_uri: "https://gitlab.tp-sso.local/users/auth/openid_connect/callback"
+      }
     }
-}
-]    
+  }
+]
 ```
 
 Les champs principaux a modifié sont :
@@ -166,35 +166,35 @@ Ensuite, une fois le conteneur lancé, un bouton devrait aparaitre, sur le bas d
     jenkins:
       systemMessage: "This Jenkins instance was configured using the Authelia example Configuration as Code, thanks Authelia!"
       securityRealm:
-       oic:
-         clientId: "jenkins"
-         clientSecret: "insecure-secret"
-         disableSslVerification: false
-         emailFieldName: "email"
-         fullNameFieldName: "name"
-         groupIdStrategy: "caseSensitive"
-         groupsFieldName: "groups"
-         logoutFromOpenidProvider: false
-         properties:
-           - "pkce"
-           - escapeHatch:
-           group: "admin-users"
-           secret: "escapeHatch"
-           username: "escapeHatch"
-           sendScopesInTokenRequest: true
-         serverConfiguration:
-           wellKnown:
-            scopesOverride: "openid profile email groups"
-            wellKnownOpenIDConfigurationUrl: "https://auth.tp-sso.local/.well-known/openid-configuration"
-         userIdStrategy: "caseSensitive"
-         userNameField: "preferred\_username"
+        oic:
+          clientId: "jenkins"
+          clientSecret: "insecure_secret"
+          disableSslVerification: false
+          emailFieldName: "email"
+          fullNameFieldName: "name"
+          groupIdStrategy: "caseSensitive"
+          groupsFieldName: "groups"
+          logoutFromOpenidProvider: false
+          properties:
+            - "pkce"
+            - escapeHatch:
+                group: "admin-users"
+                secret: "escapeHatch"
+                username: "escapeHatch"
+          sendScopesInTokenRequest: true
+          serverConfiguration:
+            wellKnown:
+              scopesOverride: "openid profile email groups"
+              wellKnownOpenIDConfigurationUrl: "https://auth.tp-sso.local/.well-known/openid-configuration"
+          userIdStrategy: "caseSensitive"
+          userNameField: "preferred_username"
     ```
     
     Il faudra modifier les éléments suivant :
     
     - wellKnownOpenIDConfigurationUrl : `"https://auth.tp-sso.local"` (uniquement le lien et pas le chemin complet)
     - clientId : `"jenkins"`
-     - clientSecret: `"secret authelia"`
+    - clientSecret: `"insecure_secret"`
 
 5. Par la suite, lancer le conteneur et vérifier que le plugin est bien installé (dans le menu plugin)
 
