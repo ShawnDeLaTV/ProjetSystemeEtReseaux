@@ -1,5 +1,16 @@
 # Terminer les configurations
 
+
+## Nginx
+
+Pour que l'infrastructure soit accessible via les noms de domaine locaux, vous devez configurer le proxy.
+
+1. **Accès à l'interface :** Connectez-vous sur [http://localhost:81/](http://localhost:81/)
+2. **Prérequis SSL :** Avant de démarrer les services, vous devez impérativement ajouter les clés de certificat à la racine du projet :
+   - `cert.pem`
+   - `key.pem`
+
+
 ## Nextcloud
 
 1. Ouvrez git bash dans le dossier `infrastructure/nextcloud/before-starting` (Clique droit, Afficher d'autres options, Open Git Bash here).
