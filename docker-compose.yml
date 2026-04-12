@@ -108,6 +108,9 @@ services:
     image: 'nextcloud:latest'
     container_name: nextcloud
     restart: always
+    extra_hosts:
+    - "auth.tp-sso.local:172.19.0.6"
+    - "nextcloud.tp-sso.local:172.19.0.6"
     ports:
       - '8081:80'  # Port HTTP pour Nextcloud (redirigé par Nginx Proxy Manager)
     volumes:

@@ -741,32 +741,25 @@ access_control:
   default_policy: 'deny'
 
   rules:
-    ## Rules applied to everyone
-    - domain: "localhost"
-      policy: 'one_factor'
-      subject: "group:gitlab_users"
-    
-    - domain: 'gitlab.techsolutions.com'
-      policy: 'two_factor'
-      subject:
-        - 'group:gitlab_users'
+    - domain: 'auth.tp-sso.local'
+      policy: 'bypass'         # important ! sinon boucle infinie
 
-    - domain: 'jenkins.techsolutions.com'
-      policy: 'two_factor'
-      subject:
-        - 'group:jenkins_users'
-
-    - domain: 'nextcloud.techsolutions.com'
+    - domain: 'nextcloud.tp-sso.local'
       policy: 'two_factor'
       subject:
         - 'group:nextcloud_users'
 
-    - domain: 'libredesk.techsolutions.com'
+    - domain: 'gitlab.tp-sso.local'
       policy: 'two_factor'
       subject:
-        - 'group:libredesk_users'
+        - 'group:gitlab_users'
 
-    - domain: 'rocketchat.techsolutions.com'
+    - domain: 'jenkins.tp-sso.local'
+      policy: 'two_factor'
+      subject:
+        - 'group:jenkins_users'
+
+    - domain: 'chat.tp-sso.local'
       policy: 'two_factor'
       subject:
         - 'group:rocketchat_users'
@@ -860,9 +853,9 @@ session:
   remember_me: '1M'
 
   cookies:
-    - domain: '127.0.0.1'
-      authelia_url: 'https://127.0.0.1:9091'
-      default_redirection_url: 'https://127.0.0.1:9091/home'
+    - domain: 'tp-sso.local'
+      authelia_url: 'https://auth.tp-sso.local'
+      default_redirection_url: 'https://auth.tp-sso.local/dashboard'
       same_site: lax
       ## The domain to protect.
       ## Note: the Authelia portal must also be in that domain.
@@ -1339,10 +1332,35 @@ identity_providers:
     ## The JWK's issuer option configures multiple JSON Web Keys. It's required that at least one of the JWK's
     ## configured has the RS256 algorithm. For RSA keys (RS or PS) the minimum is a 2048 bit key.
     jwks:
-    -
-      key: 
-          |
-          [ajouter ici la clé privée au format PEM DER]
+    - key: |
+          -----BEGIN PRIVATE KEY-----
+          MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCrs/9+aEsMSV59
+          AVSHAN13cvZAP4Oja9aiK29tpk1ihoi6p1Tnh5a2dG+Ct+vO6h4uCD1KhhpDlmF1
+          Ook6khccvuGWKQCOrTWkz0Pj8YyjLo1mOrSk9MSBv5G4aWP5S6wiZJQdrXwdaBdL
+          40wvQIuZ92kTcQFfZNQIi+cTVclPUZL0ieD1tE7vgVsagyobNjsRF0Rn21wTjLZk
+          aP5Sva6qoBX/obNF9U8t4ENRnFZvpZdVcLvBUWp5i37Zyz0koagLjh1GViY0z3wx
+          b35sR7xttytJofYSq4V9y94+ghCiXsDF1Ewy01JcLdCYX19Ji1c0x6vUMDI9/kVo
+          MkqXxGPTAgMBAAECggEAKD1b8EUC6ZM8SLGKHMWQIZFYsr/v2tnICGODjr/9vMxo
+          uM3EcSpuoL3y8ECoS+rEPeeCbbe16gcROgcI6CgasIrvlWBwl/9x5fkJIR+X5Rpg
+          2weBFHOkpf++Z+iTHHamlbzalYX143Jkm01eqmhHD0NTZdIDD1cy9fnLotVlA2hp
+          cXzxb/4H1rQYvdowTlnlBsJJf+lAps56pwRrVuN+87erTorZ3Ftd3pN/O7YcbqLH
+          zVr98Wc41T3Y9NQXLnh5QOxiUcVLPiyUVjM4QOLN/JL2YAepcVncmudfW6fAbCyb
+          dmzLGDU8LcdjuSh/V9vmsET1UayaHwkMS7PPvwMLyQKBgQDTLMlMjFZ2FWOPGOcN
+          A04hVQ+V4FaNylvQpCx6j8/Ddzwc8zIAxrDZCb8ijiu7xZDB/+h8k6CWfrrTgzqv
+          uJ6tRgN5tTD/qSoaNVB5m2bT6UB+fhntmL2x6pvpJ7LgdCw/jQju82md7DhMy0yE
+          nfS9kSDF1DnZzpcstZt3rXynpwKBgQDQJlGS4RVP1LNQ3aRYSco1ffiCgawqaFdC
+          THYDMqw3leL2y38CGU6XekMiJLUF2+GOWAkquHa0IvkaGcsSnwmRZDl/C5wKmj/7
+          +1yhxj5ZjUPW1MxL3SFha+KZFShK7vWXFuNOoUwQKOUa/DCQfioiS5ojRtF2j1GS
+          qOMBNFan9QKBgHNApjyY+zdHRSb8OF3px+J5QiBSZ+rK3oFomL3rb0EG+k/yiv/R
+          cQODRkXdwhChKvg2avRSvfplACIgJQ9ye2emJo9uTGe8M7ZKErnMDrrpOsHOoOgD
+          zMQlfyIpAH9v6BZnKtD/GE2Qdsmyyvg2HTS42GIgCdLN5cQI+ei/TqFRAoGAHATs
+          ei8eZU6mjL4pP1E/jQ/WAgtel57QEDamtCuAD0N39+zQvgGWGMH2g4QZch51MGod
+          YcjPAdSrX54VPf52lUG+k6GGcc7tyge+InDDN97SQPsIPTYZJjoVmLHGaL/eA2ar
+          VoxT5uD6ZjWIfArftRokN5dy3tjQDEP7us/G0nkCgYACG8RJ1bpaCUuo3EE8SbBR
+          dXz3OLdrI7//FPkJ2F9BKUm7q4uLEOTaZj2OwNPuwR0busjIeE5fx1XKDBSuLgrR
+          S8fHMKAEHLGtSlblj5LOfRcX37WDIg//g4Mnz3gu6vzHmwrqJHuiHCAolQDcH6dK
+          1urzVX2KVV2NuYZsVlL2IA==
+          -----END PRIVATE KEY-----
 
       ## Key ID embedded into the JWT header for key matching. Must be an alphanumeric string with 7 or less characters.
       ## This value is automatically generated if not provided. It's recommended to not configure this.
@@ -1748,7 +1766,7 @@ identity_providers:
         pkce_challenge_method: 'S256'
         claims_policy: 'nextcloud_userinfo'
         redirect_uris:
-          - 'http://localhost:8081/apps/oidc_login/oidc'
+          - 'https://nextcloud.tp-sso.local/apps/oidc_login/oidc'
         scopes:
           - 'openid'
           - 'profile'

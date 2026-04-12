@@ -9,7 +9,10 @@ public.pem
 # Authelia
 infrastructure/authelia/notification.txt
 # Nginx
-infrastructure/nginx/data
+infrastructure/nginx/data/custom_ssl
+infrastructure/nginx/data/keys.json
+infrastructure/nginx/data/logs
+
 # Gitlab
 infrastructure/gitlab/config
 infrastructure/gitlab/data
