@@ -9,6 +9,10 @@ Pour que l'infrastructure soit accessible via les noms de domaine locaux, vous d
 2. **Prérequis SSL :** Avant de démarrer les services, vous devez impérativement ajouter les clés de certificat à la racine du projet :
    - `cert.pem`
    - `key.pem`
+3. Vous devez également créer le dossier /custom_ssl/npm-4/ dans le dossier /data de nginx. Vous devez ajouter les clés de certificats suivantes :
+   - `fullchain.pem`
+   - `privkey.pem` 
+
 
 
 ## Nextcloud
