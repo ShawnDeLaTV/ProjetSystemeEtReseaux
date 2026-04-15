@@ -1,3 +1,51 @@
+# Arborescence du projet
+
+```txt
+│   .env                                ← Fichier contenant les variables critiques du projet
+│   docker-compose.yml                  ← Fichier central du projet contenant la configuration de tous les conteneurs
+│   cert.pem                            ← Certificat nécessaire pour le protocole SSL
+│   key.pem                             ← Clé nécessaire pour le protocole SSL
+│   README.md                           ← Instructions pour valider les étapes non réalisables en ligne de commande
+└───infrastructure                      ← Dossier racine pour tous les volumes montés par les conteneurs
+    ├───authelia
+    │   │   configuration.yml           ← Configuration complete d'Authelia
+    │   │   db.sqlite3
+    │   └───secrets                     ← Dossier contenant les secrets des clients OIDC
+    ├───Gitlab
+    │   ├───config
+    │   │       gitlab.rb               ← Fichier à modifier pour intégrer le support d'OIDC
+    │   └───data
+    ├───Jenkins
+    │   │   config.yml                  ← Fichier de config de base 
+    │   │   Dockerfile                  ← Fichier pourt automatiser l'installation des plug-ins au démarrage
+    │   │   jenkins.yaml                ← Fichier à créer pour intégrer le support d'OIDC
+    │   └───data
+    ├───libredesk
+    │   │   config.toml                 ← Fichier de config nécessaire pour le lancement de libredesk
+    │   └───uploads
+    ├───lldap
+    │       lldap_config.toml           ← Fichier de config de base 
+    │       users.db                    ← Base de donnée contenant les utilisateurs et les groupes créés
+    ├───nextcloud 
+    │   ├───before-starting             ← Dossier pour les hooks Docker de type `before-starting`
+    │   │       setup.sh                ← Script pour initialiser correctement Nextcloud
+    │   ├───data
+    │   │   └───config
+    │   │           config.php          ← Fichier à modifier pour intégrer le support d'OIDC
+    │   └───db
+    ├───nginx
+    │   └───data
+    │       ├───custom_ssl
+    │       │   └───npm-4
+    │       │           fullchain.pem   ← Certificat pour les communications TLS
+    │       │           privkey.pem     ← Clé pour les communications TLS
+    │       └───nginx
+    │           └───proxy_host          ← Doosier contenant les configurations des proxys créés
+    └───rocketchat
+        ├───db
+        └───uploads
+```
+
 # Terminer les configurations
 
 ## Nextcloud
@@ -118,7 +166,7 @@ Lors de votre prochain passage sur la page de connexion, vous devriez voir un bo
 
 Avant de lancer le conteneur, il faut s'assurer que la configuration suivante est ajouté dans le fichier ./infrastructure/Gitlab/config/gitlab.rb
 
- ```
+ ```rb
 gitlab_rails['omniauth_providers'] = [
   {
     name: "openid_connect",
@@ -162,7 +210,7 @@ Ensuite, une fois le conteneur lancé, un bouton devrait aparaitre, sur le bas d
 
 3. insérer dans le fichier la configuration suivante :
 
-    ```
+    ```yaml
     jenkins:
       systemMessage: "This Jenkins instance was configured using the Authelia example Configuration as Code, thanks Authelia!"
       securityRealm:
