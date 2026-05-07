@@ -10,6 +10,7 @@ certificats/wildcard/wildcard.crt
 # --- Données des services ---
 # Authelia
 infrastructure/authelia/certs
+infrastructure/authelia/jwks
 infrastructure/authelia/notification.txt
 # Nginx
 infrastructure/nginx/data/custom_ssl
