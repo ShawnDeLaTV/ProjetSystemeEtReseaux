@@ -468,7 +468,7 @@ Vous aurez alors tous vos comptes utilisateur prêt à être utilisé.
 ## Activation MFA pour les comptes utilisateurs
 
 Lors de la première connexion sur nun compte, Authelia vosu demandera de mettre en place la MFA pour ce compte.  
-Vous avez le choix entre OTP et ???. Lorsque vous choisirerez une méthode, Authelia vous demandera un code qui sera disponible dans le fichier `infrastructure/authelia/notification.txt`.  
+Lorsque vous choisirerez une méthode, Authelia vous demandera un code qui sera disponible dans le fichier `infrastructure/authelia/notification.txt`.  
 Suivez ensuite les étapes relatives à al méthode choisie puis vous pourrez utiliser le compte pour vos connexion aux services.
 
 ## Références
