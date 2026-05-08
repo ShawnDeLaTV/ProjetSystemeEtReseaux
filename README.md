@@ -1,37 +1,37 @@
 # Projet de mise en place d'un SSO via Authelia
 
-Ce repository contient le code d'un projet réalisé dans le cadre du cours INF806 lors de la séssion d'hiver 2026 à l'Université de Sherbrooke.
+Ce repository contient le code d'un projet réalisé dans le cadre du cours INF806 lors de la session d'hiver 2026 à l'Université de Sherbrooke.
 
-Le projet consiste à mettre en place une architecture basée autour d'Authelia pour avoir une connexion via SSO sur tous les services mis en place. Le système de connexion doit prendre en compte les permissions de chaque utilisateur pour lui donner, ou non, accès au service demandé. De plus, les communications entre les services doivent être sécurisées.
+Le projet consiste à mettre en place une architecture basée sur d'Authelia pour avoir une connexion via SSO sur tous les services mis en place. Le système de connexion doit prendre en compte les permissions de chaque utilisateur pour lui donner accès, ou non, au service demandé. De plus, les communications entre les services doivent être sécurisées.
 
 Les services disponibles sont :
 
 - GitLab
 - Jenkins
-- Libredesk
+- LibreDesk
 - Nextcloud
 - Rocket.Chat
 
 Les comptes utilisateurs ainsi que leurs autorisations sont gérés via un annuaire LDAP.
 
-> :memo: **Note:** Hors indications contraires, les commandes données pour la configuration sont à éxectuer à la racine du projet.
+> :memo: **Note:** Hors indications contraires, les commandes données pour la configuration sont à exécuter à la racine du projet.
 
 ## Table des matières
 
 - [Arborescence du projet](#arborescence-du-projet)
+- [Variables d'environnement et comptes admin](#variables-denvironnement-et-comptes-admin)
 - [Configurations avant de lancer le docker-compose](#configurations-avant-de-lancer-le-docker-compose)
   - [Noms de domaines locaux](#noms-de-domaines-locaux)
-  - [Nginx - Certificats auto-signés](#nginx---certificats-auto-signés)
+  - [Script de configuration de l'infrastructure](#script-de-configuration-de-linfrastructure)
   - [Secrets des clients](#secrets-des-clients)
-  - [Nextcloud - Script de setup](#nextcloud---script-de-setup)
   - [LibreDesk - Fin de l'installation](#libredesk---fin-de-linstallation)
-  - [Gitlab](#gitlab)
   - [Jenkins](#jenkins)
 - [Configurations après avoir lancé le docker-compose](#configurations-après-avoir-lancé-le-docker-compose)
   - [Nginx - Reverse Proxy](#nginx---reverse-proxy)
+  - [GitLab](#gitlab)
   - [Nextcloud - Configuration SSO](#nextcloud---configuration-sso)
   - [Rocket.Chat](#rocketchat)
-  - [LibreDesk - Configuration du SSO](#libredesk---configuration-sso)
+  - [LibreDesk - Configuration SSO](#libredesk---configuration-sso)
 - [Activation MFA pour les comptes utilisateurs](#activation-mfa-pour-les-comptes-utilisateurs)
 - [Références](#références)
 
@@ -40,16 +40,17 @@ Les comptes utilisateurs ainsi que leurs autorisations sont gérés via un annua
 ```txt
 ProjetSystemeEtReseaux :
 │   .env                                ← Fichier contenant les variables critiques du projet
+│   config.sh                           ← Script pour exécuter les commandes à faire lors de la première installation
 │   docker-compose.yml                  ← Fichier central du projet contenant la configuration de tous les conteneurs
 │   README.md                           ← Instructions pour valider les étapes non réalisables en ligne de commande
 ├───certificats
 │   ├───ca                              ← Dossier pour la CA
 │   └───wildcard                        ← Dossier contenant les certificats serveur et leur configuration
-├───documents                           ← Dossier contenant l'énnoncé et le rapport du projet
+├───documents                           ← Dossier contenant l'énoncé et le rapport du projet
 └───infrastructure                      ← Dossier racine pour tous les volumes montés par les conteneurs
     ├───authelia
-    │   │   configuration.yml           ← Configuration complete d'Authelia
-    │   │   notification.txt            ← Fichier contenant le code de verification quand demandé par Authelia
+    │   │   configuration.yml           ← Configuration complète d'Authelia
+    │   │   notification.txt            ← Fichier contenant le code de vérification quand demandé par Authelia
     │   └───jwks
     |           private.pem             ← Clé de chiffrement pour les JWT générés par OIDC
     ├───Gitlab
@@ -58,12 +59,12 @@ ProjetSystemeEtReseaux :
     │   └───data
     ├───Jenkins
     │   │   ca.crt                      ← Copie du certificat de la CA
-    │   │   Dockerfile                  ← Fichier pourt automatiser l'installation des plug-ins au démarrage
+    │   │   Dockerfile                  ← Fichier pour automatiser l'installation des plug-ins au démarrage
     │   │   jenkins.yaml                ← Fichier à créer pour intégrer le support d'OIDC
     │   └───data
     ├───libredesk
     │   │   config.toml                 ← Fichier de config nécessaire pour le lancement de libredesk
-    │   │   users.csv                   ← Liste des noms, prénoms, adresses mail et rôles des utilisateurs
+    │   │   users.csv                   ← Liste des noms, prénoms, adresses e-mail et rôles des utilisateurs
     │   └───uploads
     ├───lldap
     │       lldap_config.toml           ← Fichier de config de base 
@@ -84,17 +85,68 @@ ProjetSystemeEtReseaux :
     │       │           fullchain.pem   ← Certificat pour les communications TLS
     │       │           privkey.pem     ← Clé pour les communications TLS
     │       └───nginx
-    │           └───proxy_host          ← Doosier contenant les configurations des proxys créés
+    │           └───proxy_host          ← Dossier contenant les configurations des proxys créés
     └───rocketchat
         ├───db
         └───uploads
 ```
 
+## Variables d'environnement et comptes admin
+
+### Les variables d'environnement
+
+1. Secrets LLDAP
+
+    - `LLDAP_JWT_SECRET` : Clé de chiffrement pour les JWT générés par LDAP
+    - `LLDAP_ADMIN_PASSWORD` : Mot de passe de l'utilisateur `admin`
+
+2. Secrets Authelia
+
+    - `AUTHELIA_JWT_SECRET` : Clé de chiffrement pour les JWT générés par Authelia
+    - `AUTHELIA_STORAGE_KEY` : Clé de chiffrement de la base de données d'Authelia
+    - `AUTHELIA_SESSION_SECRET` : Clé pour signer et sécuriser les cookies de session
+
+3. Secrets Nextcloud
+
+    - `NEXTCLOUD_ADMIN_USER` : Identifiant du compte admin de Nextcloud
+    - `NEXTCLOUD_ADMIN_PASSWORD` : Mot de passe du compte admin de Nextcloud
+    - `NEXTCLOUD_MYSQL_ROOT_PASSWORD` : Mot de passe de l'utilisateur `root` de la base de données
+    - `NEXTCLOUD_MYSQL_USER_PASSWORD` : Mot de passe de l'utilisateur `nextcloud_user` de la base de données
+
+4. Secrets LibreDesk
+
+    - `LIBREDESK_SYSTEM_USER_PASSWORD` : Mot de passe de l'utilisateur `System` (compte admin)
+    - `LIBREDESK_POSTGRES_DB` : Nom de la base de donées associée à LibreDesk
+    - `LIBREDESK_POSTGRES_USER` : Identifiant de l'utilisateur de la base de données
+    - `LIBREDESK_POSTGRES_PASSWORD` : Mot de passe de l'utilisateur de la base de données
+
+---
+
+### Comptes admin
+
+- LLDAP
+  - Login : `admin`
+  - Mot de passe : `LLDAP_ADMIN_PASSWORD`
+- Nginx Proxy Manager
+  - A créer lors du premier démarrage du conteneur
+- LibreDesk
+  - Login : `System`
+  - Mot de passe : `LIBREDESK_SYSTEM_USER_PASSWORD`
+- Nextcloud
+  - Login : `NEXTCLOUD_ADMIN_USER`
+  - Mot de passe : `NEXTCLOUD_ADMIN_PASSWORD`
+- Rocket.Chat
+  - A créer lors du premier démarrage du conteneur
+
+Pour les comptes utilisateurs l'identifiant est `[Initiale_Prénom][Initiale_Nom]01` (ex : `bm01` pour Bob Martin).
+Le mot de passe de tous les utilisateurs est `azertyui123`.
+Leur adresse e-mail suit le format `prenom.nom@gmail.com`.
+
 ## Configurations avant de lancer le docker-compose
 
 ### Noms de domaines locaux
 
-Pour ce projet, nous avons utilisé des noms de domaine locaux. Vous pouvez les ajouter à votre fichier host :
+Pour ce projet, nous avons utilisé des noms de domaine locaux. Vous pouvez les ajouter à votre fichier hosts :
 
 ```txt
 # Projet SSO Authelia
@@ -110,70 +162,50 @@ Si vous souhaitez utiliser des noms différents, vous devrez adapter la suite de
 
 ---
 
-### Nginx - Certificats auto-signés
+### Script de configuration de l'infrastructure
 
-Pour que toutes les communications soient sécurisées, nous utilisons des certificats auto-signés. Nous donc mettre en place une authorité de certification (CA) puis générer des certificats pour le serveur.
+Pour simplifier le lancement lors du premier démarrage de l'infrastructure, les commandes nécessaires ont été regroupées dans le script `config.sh`.
 
-Pour ce faire, nous allons utiliser OpenSSL qui n'est pas pris en charge par PowerShell. Nous allons donc utiliser Git Bash pou réxecuter les commande suivantes.
-
-**Mise en place de la CA (éxecutez les commandes dans `certificats/ca`):**
+Pour l'éxecuter, ouvrez Git Bash à la racine du projet et exéecutez les commandes suivantes :
 
 ```sh
-# Génère une clé privée pour la CA
-openssl genrsa -out "ca.key" 4096
-# Crée un certificat auto-signé pour la CA
-openssl req -x509 -new -nodes -key "ca.key" -sha256 -days 3650 -out "ca.crt" -subj "/C=CA/ST=Quebec/O=MonOrg/CN=MonOrg-RootCA"
+# Format le fichier pour rendre le script éxecutable
+dos2unix config.sh
+# Lance le script
+sh config.sh
 ```
 
-Une fois le certificat `ca.crt` générés, copiez-le dans les dossiers `infrastructure/Jenkins` et `infrastructure/nextcloud/before-starting`.
+Les commandes exécutées font des actions sur les trois parties suivantes :
 
-**Certificats serveur (éxecutez les commandes dans `certificats/wildcard`) :**
+#### Nginx - Certificats auto-signés
 
-```sh
-# Génère une clé privée pour le serveur Nginx
-openssl genrsa -out "cert.key" 2048
-# Crée une CSR (Certificate Signing Request)
-openssl req -new -key "cert.key" -out "cert.csr" -config "cert.cnf"
-# Transforme la CSR en certificat signé par la CA
-openssl x509 -req -in "cert.csr" -CA "ca.crt" -CAkey "ca.key" -CAcreateserial -out "cert.crt" -days 825 -sha256 -extfile "cert.cnf" -extensions v3_req
-```
+Pour que toutes les communications soient sécurisées, nous utilisons des certificats auto-signés. Nous devons donc mettre en place une autorité de certification (CA) puis générer un certificat pour le serveur.
+
+Les fichiers de la CA sont disponibles dans `certificats/ca` et ceux du certificat serveur dans `certificats/wildcard`
+
+#### Authelia
+
+Authelia a besoin d'une clé RSA pour chiffrer les JWT générés par OpenID Connect.
+
+Le script génère une nouvelle clé RSA et la place dans le dossier `infrastructure/authelia/jwks`.
+
+#### Nextcloud - Script de setup
+
+Pour automatiser la configuration de Nextcloud, nous utilisons un script mais il n'est pas au bon format lorsqu'il est obtenu depuis GitHub. Le script de configuration le formate correctement pour le rendre exécutable lors du démarrage de Nextcloud.
 
 ---
 
 ### Secrets des clients
 
-Pour garantir l'authenticiter du fournisseur OIDC, nous avons besoins de secrets qui seront inclus dans les configurations des differents services.
+Pour garantir l'authenticité du fournisseur OIDC, nous avons besoin de secrets qui seront inclus dans les configurations des différents services.
 
-Choisissez un secret par application puis, pour chaque secret, utilisez la commande suivante pour obtenir le digest correspondant :
+Choisissez un secret par application puis, pour chaque secret, utilisez la commande suivante pour obtenir le hachage correspondant :
 
 ```sh
 docker run --rm authelia/authelia:latest authelia crypto hash generate pbkdf2 --password "<secret>"
 ```
 
-Le secret en clair sera utilisé dans les dernières configurations ci-dessous tandis que le digest sera mis dans la configuration du client associé dans le fichier `infrastructure/authelia/configuration.yml`.
-
----
-
-### Authelia
-
-Authelia a besion d'une clé RSA pour chiffrer les JWT générés par OpenID Connect.
-
-Pour obtenir et utliser une clé, vous devez créer le dossier `jwks` pour authelia et générer une nouvelle clé RSA avec les commandes suivante :
-
-```sh
-# Crée le dossier pour stocker la clé
-mkdir ./infrastructure/authelia/jwks
-# Génère la clé privée qui sera utilsiée par Authelia
-openssl genrsa -out "./infrastructure/authelia/jwks/private.pem" 4096
-```
-
----
-
-### Nextcloud - Script de setup
-
-1. Ouvrez Git Bash dans le dossier `infrastructure/nextcloud/before-starting`.
-
-2. Effectuez la commande `dos2unix setup.sh` pour mettre le script au bon format.
+Le secret en clair sera utilisé dans les dernières configurations ci-dessous tandis que le hachage sera mis dans la configuration du client associé dans le fichier `infrastructure/authelia/configuration.yml`.
 
 ---
 
@@ -183,45 +215,7 @@ openssl genrsa -out "./infrastructure/authelia/jwks/private.pem" 4096
 
 2. Créez une copie que vous nommez `config.toml` et placez la dans le dossier `infrastructure/libredesk`.
 
-3. Modifiez les valeurs pour correspondre à votre configuration, nottament la clé d'encryption `encryption_key`.
-
----
-
-### Gitlab
-
-Avant de lancer le conteneur, il faut s'assurer que la configuration suivante est ajouté dans le fichier ./infrastructure/Gitlab/config/gitlab.rb
-
-```rb
-gitlab_rails['omniauth_providers'] = [
-  {
-    name: "openid_connect",
-    label: "Authelia",
-    icon: "https://www.authelia.com/images/branding/logo-cropped.png",
-    args: {
-      name: "openid_connect",
-      strategy_class: "OmniAuth::Strategies::OpenIDConnect",
-      issuer: "https://auth.tp-sso.local",
-      discovery: true,
-      scope: ["openid","profile","email","groups"],
-      client_auth_method: "basic",
-      response_type: "code",
-      response_mode: "query",
-      uid_field: "preferred_username",
-      send_scope_to_token_endpoint: true,
-      pkce: true,
-      client_options: {
-        identifier: "gitlab",
-        secret: "insecure_secret",
-        redirect_uri: "https://gitlab.tp-sso.local/users/auth/openid_connect/callback"
-      }
-    }
-  }
-]
-```
-
-Pensez bien à modifier l'url d'authélia et à remplacer `insecure_secret` par le secret ainsi qu'à mettre le digest associé dans le fichier de configuration d'Authelia.
-
-Ensuite, une fois le conteneur lancé, un bouton devrait aparaitre, sur le bas de la page, permettant de s'authentifier avec Authelia.
+3. Modifiez les valeurs pour correspondre à votre configuration, notamment la clé d'encryption `encryption_key`.
 
 ---
 
@@ -255,11 +249,13 @@ jenkins:
           wellKnownOpenIDConfigurationUrl: "https://auth.tp-sso.local/.well-known/openid-configuration"
       userIdStrategy: "caseSensitive"
       userNameField: "preferred_username"
+
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
 ```
 
-Pensez bien à modifier l'url d'authélia et à remplacer `insecure_secret` par le secret ainsi qu'à mettre le digest associé dans le fichier de configuration d'Authelia.
-
-Par la suite, lancer le conteneur et vérifier que le plugin est bien installé (dans le menu plugin)
+Pensez bien à modifier l'url d'authélia et à remplacer `insecure_secret` par le secret ainsi qu'à mettre le hachage associé dans le fichier de configuration d'Authelia.
 
 Lors de votre prochain passage sur la page de connexion, vous devriez voir un bouton `Log in with Authelia`.
 
@@ -277,13 +273,13 @@ docker-compose up -d
 
 Pour que l'infrastructure soit accessible via les noms de domaine locaux, vous devez configurer le proxy.
 
-Pour commencer, accédez à l'interface admin à l'ardesse `http://localhost:81/`, créez le compte admin, allez dans l'onglet Certificates puis créez un nouveau certificat `Certificat_SSO` à l'aide des fichiers `wildcard.key` et `wildcard.crt` dans le dossier `certificats/wildcard`.
+Pour commencer, accédez à l'interface admin à l'adresse `http://localhost:81/`, créez le compte admin, allez dans l'onglet Certificates puis créez un nouveau certificat `Certificat_SSO` à l'aide des fichiers `wildcard.key` et `wildcard.crt` dans le dossier `certificats/wildcard`.
 
-Un nouveaux dossier nommé `npm-1` doit alors etre créé dans le dossier `infrastructure/nginx/data/custom-ssl`.
+Un nouveau dossier nommé `npm-1` doit alors être créé dans le dossier `infrastructure/nginx/data/custom-ssl`.
 
-Nous devons maintenant créer les proxy hosts poru les services.
+Nous devons maintenant créer les proxy hosts pour les services.
 
-Allez sur la page Proxy Hosts (Menu Hosts, Porxy Hosts) puis créez un nouvel host pour chaque service selon les configurations suivantes :
+Allez sur la page Proxy Hosts (Menu Hosts, Proxy Hosts) puis créez un nouvel host pour chaque service selon les configurations suivantes :
 
 | Domain Names | Scheme | Forward Hostname / IP | Forward Port | Block Common Exploits | SSL Certificate | Force SSL |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -296,7 +292,7 @@ Allez sur la page Proxy Hosts (Menu Hosts, Porxy Hosts) puis créez un nouvel ho
 
 Pour finir la configuration des proxys, il faut ajouter les lignes suivantes dans la partie *Custom Nginx Configuration* (roue crantée dans la fenêtre d'édition des proxys) :
 
-- Pour Authelia, Gitlab, Jenkins, Libredesk et Nextcloud :
+- Pour Authelia, GitLab, Jenkins, LibreDesk et Nextcloud :
 
   ```conf
   location /authelia {
@@ -335,6 +331,47 @@ Pour finir la configuration des proxys, il faut ajouter les lignes suivantes dan
   ```
 
 Vous trouverez les fichiers de configuration pour chaque proxy dans le dossier `infrastructure/nginx/data/nginx/proxy_host`
+
+---
+
+### GitLab
+
+Ajoutez la configuration suivante dans le fichier `./infrastructure/Gitlab/config/gitlab.rb` puis redémarrez le conteneur
+
+```rb
+gitlab_rails['omniauth_allow_single_sign_on'] = ['openid_connect']
+gitlab_rails['omniauth_block_auto_created_users'] = false
+gitlab_rails['omniauth_auto_link_user'] = ['openid_connect']
+gitlab_rails['omniauth_providers'] = [
+  {
+    name: "openid_connect",
+    label: "Authelia",
+    icon: "https://www.authelia.com/images/branding/logo-cropped.png",
+    args: {
+      name: "openid_connect",
+      strategy_class: "OmniAuth::Strategies::OpenIDConnect",
+      issuer: "https://auth.tp-sso.local",
+      discovery: true,
+      scope: ["openid","profile","email","groups"],
+      client_auth_method: "basic",
+      response_type: "code",
+      response_mode: "query",
+      uid_field: "preferred_username",
+      send_scope_to_token_endpoint: true,
+      pkce: true,
+      client_options: {
+        identifier: "gitlab",
+        secret: "insecure_secret",
+        redirect_uri: "https://gitlab.tp-sso.local/users/auth/openid_connect/callback"
+      }
+    }
+  }
+]
+```
+
+Pensez bien à modifier l'url d'authélia et à remplacer `insecure_secret` par le secret ainsi qu'à mettre le hachage associé dans le fichier de configuration d'Authelia.
+
+Ensuite, une fois le conteneur lancé, un bouton devrait aparaître, sur le bas de la page, permettant de s'authentifier avec Authelia.
 
 ---
 
@@ -377,7 +414,9 @@ Après avoir lancé le docker-compose, ajoutez les lignes suivantes dans le fich
   'oidc_login_code_challenge_method' => 'S256'
 ```
 
-Pensez bien à modifier l'url d'authélia et à remplacer `insecure_secret` par le secret ainsi qu'à mettre le digest associé dans le fichier de configuration d'Authelia.
+Pensez bien à modifier l'url d'authélia et à remplacer `insecure_secret` par le secret ainsi qu'à mettre le hachage associé dans le fichier de configuration d'Authelia.
+
+Si vous ne voyez pas le dossier `infrastructure/nextcloud/data/config`, c'est que Nextcloud n'est pas encore opérationnel. Regardez les logs du conteneur `nextcloud` jusqu'à voir la ligne `[core:notice] [pid 1:tid 1] AH00094: Command line: 'apache2 -D FOREGROUND'`. Nextcloud sera alors prêt pour la configuration.
 
 Lors de votre prochain passage sur la page de connexion, vous devriez voir un bouton `Log in with Authelia`
 
@@ -391,7 +430,7 @@ Lors de votre prochain passage sur la page de connexion, vous devriez voir un bo
 
 3. Cliquez sur `Ajouter OAuth personalisé` et nommez la `authelia`.
 
-4. Vous devriez avoir une section `Custom OAuth: Authelia` (si non rafraichissez la page).  
+4. Vous devriez avoir une section `Custom OAuth: Authelia` (si non rafraîchissez la page).  
   Activez cette méthode de connexion et modifiez les paramètres suivants :
 
     - URL: `https://auth.tp-sso.local`
@@ -415,9 +454,9 @@ Lors de votre prochain passage sur la page de connexion, vous devriez voir un bo
     - Merge users: `On`
     - Show Button on Login Page: `On`
 
-    Pensez bien à modifier l'url d'authélia et à remplacer `insecure_secret` par le secret ainsi qu'à mettre le digest associé dans le fichier de configuration d'Authelia.
+    Pensez bien à modifier l'url d'authélia et à remplacer `insecure_secret` par le secret ainsi qu'à mettre le hachage associé dans le fichier de configuration d'Authelia.
 
-5. Si vous souhaitez lier les rôles Authelia aux rôles Rocket.Chat, activez l'option `Map Roles/Groups to channels` et décrivez le mapping dans le champs `OAuth Group Channel Map` suivant le schémat `"role_authelia": "role_rocketchat"` tel que :
+5. Si vous souhaitez lier les rôles Authelia aux rôles Rocket.Chat, activez l'option `Map Roles/Groups to channels` et décrivez le mapping dans le champs `OAuth Group Channel Map` suivant le schéma `"role_authelia": "role_rocketchat"` tel que :
 
     ```json
     {
@@ -426,7 +465,7 @@ Lors de votre prochain passage sur la page de connexion, vous devriez voir un bo
     }
     ```
 
-6. Allez dans Manage puis Paramètres et cherchez le menu Comtpe. Alelz dans la section Authentification à deux facteurs puis désactivez l'option `Activer l'authentification à deux facteurs par e-mail`.
+6. Allez dans Manage puis Paramètres et cherchez le menu Compte. Allez dans la section Authentification à deux facteurs puis désactivez l'option `Activer l'authentification à deux facteurs par e-mail`.
 
 Lors de votre prochain passage sur la page de connexion, vous devriez voir un bouton `Log in with Authelia`
 
@@ -436,13 +475,13 @@ Lors de votre prochain passage sur la page de connexion, vous devriez voir un bo
 
 #### Ajout des utilisateurs
 
-LibreDesk ne supportant pas l'auto-providing lors de la connexion via SSO, nous devons ajouter tous les utilisateurs avant de tenter toute connexion.
+LibreDesk ne supportant pas l'auto-providing lors de la connexion via SSO, nous devons ajouter tous les utilisateurs avant de tenter une connexion.
 
-1. Allez dans les paramètres admin de Libredesk, Teammates puis Agents.
+1. Allez dans les paramètres admin de LibreDesk, Teammates puis Agents.
 
-2. Cliquez sur le bouton `import` et séléctionnez le fichier `infrastructure/libredesk/users.csv`.
+2. Cliquez sur le bouton `import` et sélectionnez le fichier `infrastructure/libredesk/users.csv`.
 
-Vous aurez alors tous vos comptes utilisateur prêt à être utilisé.
+Vous aurez alors tous vos comptes utilisateurs prêts à être utilisés.
 
 #### Mise en place du SSO
 
@@ -453,23 +492,23 @@ Vous aurez alors tous vos comptes utilisateur prêt à être utilisé.
 3. Allez dans les paramètres, Security, puis SSO.
 
 4. Cliquez sur `New SSO`, choisissez `Custom` pour le fournisseur puis entrez les informations suivantes :
-    - Name: `Autelia`
+    - Name: `Authelia`
     - Provider URL: `https://auth.tp-sso.local`
     - Logo URL : `https://www.authelia.com/images/branding/logo-cropped.png`
     - Client ID: `libredesk`
     - Client secret: `insecure_secret`
 
-    Pensez bien à modifier l'url d'authélia et à remplacer `insecure_secret` par le secret ainsi qu'à mettre le digest associé dans le fichier de configuration d'Authelia.
+    Pensez bien à modifier l'url d'authélia et à remplacer `insecure_secret` par le secret ainsi qu'à mettre le hachage associé dans le fichier de configuration d'Authelia.
 
 5. Validez en cliquant sur `Save`. LibreDesk va tester la connexion avec le fournisseur d'identité pour valider le SSO.
 
-6. Verifiez que l'adresse de retrour donnée par LibreDesk correspond bien à celle dans la configuration Authelia
+6. Vérifiez que l'adresse de retour donnée par LibreDesk correspond bien à celle dans la configuration Authelia
 
 ## Activation MFA pour les comptes utilisateurs
 
-Lors de la première connexion sur nun compte, Authelia vosu demandera de mettre en place la MFA pour ce compte.  
+Lors de la première connexion sur un compte, Authelia vous demandera de mettre en place la MFA pour ce compte.  
 Lorsque vous choisirerez une méthode, Authelia vous demandera un code qui sera disponible dans le fichier `infrastructure/authelia/notification.txt`.  
-Suivez ensuite les étapes relatives à al méthode choisie puis vous pourrez utiliser le compte pour vos connexion aux services.
+Suivez ensuite les étapes relatives à la méthode choisie puis vous pourrez utiliser le compte pour vos connexions aux services.
 
 ## Références
 
