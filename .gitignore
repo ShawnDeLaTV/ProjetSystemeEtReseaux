@@ -3,36 +3,41 @@
 
 # --- Certificats ---
 certificats/ca
-certificats/wildcard/wildcard.key
-certificats/wildcard/wildcard.csr
 certificats/wildcard/wildcard.crt
+certificats/wildcard/wildcard.csr
+certificats/wildcard/wildcard.key
 
 # --- Données des services ---
 # Authelia
 infrastructure/authelia/certs
 infrastructure/authelia/jwks
+infrastructure/authelia/db.sqlite3
 infrastructure/authelia/notification.txt
-# Nginx
-infrastructure/nginx/data/custom_ssl
-infrastructure/nginx/data/keys.json
-infrastructure/nginx/data/logs
 
 # Gitlab
 infrastructure/gitlab/config
 infrastructure/gitlab/data
 infrastructure/gitlab/logs
+
 # Jenkins
 infrastructure/jenkins/data
 infrastructure/jenkins/ca.crt
 infrastructure/jenkins/jenkins.yaml
-# Nextcloud
-infrastructure/nextcloud/before-starting/ca.crt
-infrastructure/nextcloud/data
-infrastructure/nextcloud/db
-# Rocket.Chat
-infrastructure/rocketchat/db
+
 # LibreDesk
-infrastructure/libredesk/config.toml
-infrastructure/libredesk/uploads
 infrastructure/libredesk/postgres-data
 infrastructure/libredesk/redis-data
+infrastructure/libredesk/uploads
+infrastructure/libredesk/config.toml
+
+# Nextcloud
+infrastructure/nextcloud/data
+infrastructure/nextcloud/db
+infrastructure/nextcloud/before-starting/ca.crt
+
+# Nginx
+infrastructure/nginx/data
+
+# Rocket.Chat
+infrastructure/rocketchat/db
+infrastructure/rocketchat/uploads

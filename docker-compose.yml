@@ -1,11 +1,17 @@
 networks:
   sso_network:
     driver: bridge
-  libredesk:
+    ipam:
+      config:
+        - subnet: 172.40.0.0/24
+  nextcloud_network:
+  rocketchat_network:
+  libredesk_network:
+  ldap_network:
+
 
 services:
-  # Le Reverse Proxy (Nginx Proxy Manager)
-  # C'est lui qui gère le HTTPS et redirige vers les bons services
+  # Nginx Proxy Manager (Reverse proxy)
   nginx-proxy:
     image: 'jc21/nginx-proxy-manager:latest'
     container_name: nginx-proxy
@@ -18,35 +24,42 @@ services:
       - ./infrastructure/nginx/data:/data
       - ./infrastructure/nginx/letsencrypt:/etc/letsencrypt
     networks:
-      - sso_network
+      sso_network:
+        ipv4_address: 172.40.0.10
 
-  # Authelia (Le serveur d'authentification)
+  # Authelia (Serveur d'authentification)
   authelia:
     image: 'authelia/authelia:latest'
     container_name: authelia
+    command:
+      - "authelia"
+      - "--config.experimental.filters=template"
     restart: always
     ports:
       - '9091:9091'
     volumes:
       - ./infrastructure/authelia:/config
-      - ./secrets:/config/secrets
+      - ./certificats/ca/ca.crt:/config/certs/ca.crt:ro
     networks:
-      - sso_network
+      sso_network:
+        ipv4_address : 172.40.0.11
+      ldap_network:
     environment:
-      - TZ=America/Montreal
-      - AUTHELIA_CONFIG_EXPERIMENTAL_FILTERS=expand-env 
-      - AUTHELIA_SESSION_COOKIES_INSECURE=true
-      - AUTHELIA_SERVER_DISABLE_HEALTHCHECK=true
-
+      - TZ=America/Montreal 
       - AUTHELIA_IDENTITY_PROVIDERS_OIDC_HMAC_SECRET=${AUTHELIA_JWT_SECRET}
-      - AUTHELIA_IDENTITY_PROVIDERS_OIDC_JWKS_0_KEY=${AUTHELIA_OIDC_PRIVATE_KEY}
       - AUTHELIA_STORAGE_ENCRYPTION_KEY=${AUTHELIA_STORAGE_KEY}
       - AUTHELIA_SESSION_SECRET=${AUTHELIA_SESSION_SECRET}
       - AUTHELIA_AUTHENTICATION_BACKEND_LDAP_PASSWORD=${LLDAP_ADMIN_PASSWORD}
     depends_on:
       - lldap
+    extra_hosts:
+      - "gitlab.tp-sso.local:172.40.0.10"
+      - "jenkins.tp-sso.local:172.40.0.10"
+      - "nextcloud.tp-sso.local:172.40.0.10"
+      - "rocketchat.tp-sso.local:172.40.0.10"
+      - "libredesk.tp-sso.local:172.40.0.10"
 
-  # LLDAP
+  # LLDAP (Annuaire pour la gestion des utilisateurs)
   lldap:
     image: 'lldap/lldap:latest'
     container_name: lldap
@@ -55,78 +68,90 @@ services:
       - TZ=America/Montreal
       - LLDAP_JWT_SECRET=${LLDAP_JWT_SECRET}
       - LLDAP_LDAP_USER_PASS=${LLDAP_ADMIN_PASSWORD}
-      - LLDAP_LDAP_BASE_DN=dc=techsolutions,dc=com
+      - LLDAP_LDAP_BASE_DN=dc=tp-sso,dc=local
       - LLDAP_ARGON2_PARAMS__MEMORY_COST=32768
       - LLDAP_ARGON2_PARAMS__PARALLELISM=1
+      
     volumes:
       - ./infrastructure/lldap:/data
     ports:
       - "17170:17170" 
       - "3890:3890"
     networks:
-      - sso_network
+      - ldap_network
 
-  #Gitlab 
+  #Gitlab (Service de gestion de code source)
   gitlab :
     image : 'gitlab/gitlab-ce:latest'
     container_name : gitlab
     restart : always
 
     ports :
-      - "32000:22"
       - "37000:80"
     volumes :
       - ./infrastructure/Gitlab/config:/etc/gitlab
       - ./infrastructure/Gitlab/logs:/var/log/gitlab
       - ./infrastructure/Gitlab/data:/var/opt/gitlab
+      - ./certificats/ca/ca.crt:/etc/gitlab/trusted-certs/monorg-ca.crt
     networks :
       - sso_network
+    extra_hosts:
+      - "auth.tp-sso.local:172.40.0.10"
+      
 
-  #Jenkins
+  #Jenkins (Serveur d'intégration continue et de déploiement continu)
   jenkins:
     build :
-      context : .
-      dockerfile : ./infrastructure/Jenkins/Dockerfile
+      context : ./infrastructure/Jenkins/
+      dockerfile : Dockerfile
     container_name: jenkins
     restart : always
     user : root
     environment:
-      - CASC_JENKINS_CONFIG=/var/jenkins_home/casc_configs
+      - CASC_JENKINS_CONFIG=/var/jenkins_home/casc_configs/jenkins.yaml
     ports : 
       - "37001:8080"
-      - "38001:50000"
     volumes:
       - ./infrastructure/Jenkins/data:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock
       - ./infrastructure/Jenkins/jenkins.yaml:/var/jenkins_home/casc_configs/jenkins.yaml
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./certificats/ca/ca.crt:/usr/local/share/ca-certificates/monorg-ca.crt
     networks :
       - sso_network
+    extra_hosts:
+      - "auth.tp-sso.local:172.40.0.10"
 
 
-  # Nextcloud (Le service de stockage de fichiers)
+  # Nextcloud (Service de stockage de fichiers)
   nextcloud:
-    image: 'nextcloud:latest'
+    build :
+      context : ./infrastructure/nextcloud/before-starting/
+      dockerfile : Dockerfile
     container_name: nextcloud
     restart: always
     extra_hosts:
-    - "auth.tp-sso.local:172.19.0.6"
-    - "nextcloud.tp-sso.local:172.19.0.6"
+      - "auth.tp-sso.local:172.40.0.10"
     ports:
-      - '8081:80'  # Port HTTP pour Nextcloud (redirigé par Nginx Proxy Manager)
+      - '8081:80'
     volumes:
       - ./infrastructure/nextcloud/data:/var/www/html # Fichiers de configuration et utilisateurs
-      - ./infrastructure/nextcloud/before-starting:/docker-entrypoint-hooks.d/before-starting # Hook pour initialiser Nextcloud
+      - ./infrastructure/nextcloud/before-starting:/docker-entrypoint-hooks.d/before-starting
+      - ./certificats/ca/ca.crt:/usr/local/share/ca-certificates/monorg-ca.crt
     environment:
-      - MYSQL_DATABASE=nextcloud  # Nom de la base de données
+      - MYSQL_DATABASE=nextcloud       # Nom de la base de données
       - MYSQL_USER=nextcloud_user      # Nom d'utilisateur de la base de données
       - MYSQL_PASSWORD=${NEXTCLOUD_MYSQL_USER_PASSWORD}   # Mot de passe de l'utilisateur
-      - MYSQL_HOST=nextcloud_db   # Nom du service de la base de données dans Docker Compose
-      - NEXTCLOUD_ADMIN_USER=${NEXTCLOUD_ADMIN_USER}  # Nom d'utilisateur de l'administrateur Nextcloud
+      - MYSQL_HOST=nextcloud_db        # Nom du service de la base de données dans Docker Compose
+      - NEXTCLOUD_ADMIN_USER=${NEXTCLOUD_ADMIN_USER}      # Nom d'utilisateur de l'administrateur Nextcloud
       - NEXTCLOUD_ADMIN_PASSWORD=${NEXTCLOUD_ADMIN_PASSWORD}  # Mot de passe de l'administrateur Nextcloud
-      - PHP_UPLOAD_LIMIT=10G      # limitations ressources pour Nextcloud
+      - PHP_UPLOAD_LIMIT=10G           # limitations ressources pour Nextcloud
       - PHP_MEMORY_LIMIT=512M
+      - NEXTCLOUD_TRUSTED_DOMAINS=nextcloud.tp-sso.local
+      - OVERWRITEHOST=nextcloud.tp-sso.local
+      - OVERWRITEPROTOCOL=https
     networks:
       - sso_network
+      - nextcloud_network
     depends_on:
       - nextcloud_db
       - nginx-proxy
@@ -143,23 +168,28 @@ services:
     volumes:
       - ./infrastructure/nextcloud/db:/var/lib/mysql  # Données persistantes de la base de données
     networks:
-      - sso_network
+      - nextcloud_network
 
-  # Rocket.Chat (Le service de messagerie instantanée)
+  # Rocket.Chat (Service de messagerie instantanée)
   rocketchat:
     image: 'rocketchat/rocket.chat:latest'
     container_name: rocketchat
     restart: always
     ports:
-      - '3000:3000' # Port HTTP pour Rocket.Chat
+      - '3000:3000'
     environment:
       - MONGO_URL=mongodb://rocketchat_db:27017/rocketchat  # URL de connexion à la base de données
-      - ROOT_URL=http://localhost:3000             # URL de base pour Rocket.Chat, utilisée pour les liens et redirections
+      - ROOT_URL=https://rocketchat.tp-sso.local            # URL de base pour Rocket.Chat, utilisée pour les liens et redirections
       - PORT=3000
+      - NODE_EXTRA_CA_CERTS=/etc/ssl/certs/monorg-ca.crt
     volumes:
       - ./infrastructure/rocketchat/uploads:/app/uploads    # Données persistantes pour les fichiers téléchargés dans Rocket.Chat
+      - ./certificats/ca/ca.crt:/etc/ssl/certs/monorg-ca.crt
     networks:
       - sso_network
+      - rocketchat_network
+    extra_hosts:
+      - "auth.tp-sso.local:172.40.0.10"
     depends_on:
       - rocketchat_db
       - nginx-proxy
@@ -171,11 +201,10 @@ services:
     volumes:
       - ./infrastructure/rocketchat/db:/data/db # Données persistantes de la base de données
     networks:
-      - sso_network
+      - rocketchat_network
 
-  # --- Docker compose Libredesk ---
 
-  # Libredesk app
+  # Libredesk (Service de gestion de tickets)
   app:
     image: libredesk/libredesk:latest
     container_name: libredesk_app
@@ -186,41 +215,45 @@ services:
       # If the password is set during first docker-compose up, the system user password will be set to this value.
       # You can always set system user password later by running `docker exec -it libredesk_app ./libredesk --set-system-user-password`.
       LIBREDESK_SYSTEM_USER_PASSWORD: ${LIBREDESK_SYSTEM_USER_PASSWORD}
+      APP_URL: https://libredesk.tp-sso.local
+      SSL_CERT_FILE: /usr/local/share/ca-certificates/monorg-ca.crt
     networks:
-      - libredesk
+      - libredesk_network
       - sso_network
+    extra_hosts:
+      - "auth.tp-sso.local:172.40.0.10"
     depends_on:
       - db
       - redis
+      - authelia
     volumes:
       - ./infrastructure/libredesk/uploads:/libredesk/uploads:rw 
       - ./infrastructure/libredesk/config.toml:/libredesk/config.toml
-    command: [sh, -c, "./libredesk --install --idempotent-install --yes --config /libredesk/config.toml && ./libredesk --upgrade --yes --config /libredesk/config.toml && ./libredesk --config /libredesk/config.toml"]
-    
-  # PostgreSQL database
+      - ./certificats/ca/ca.crt:/usr/local/share/ca-certificates/monorg-ca.crt:ro
+    command: [sh, -c, " update-ca-certificates && ./libredesk --install --idempotent-install --yes --config /libredesk/config.toml && ./libredesk --upgrade --yes --config /libredesk/config.toml && ./libredesk --config /libredesk/config.toml"]
+
   db:
     image: postgres:17-alpine
     container_name: libredesk_db
     restart: unless-stopped
     networks:
-      - libredesk
+      - libredesk_network
     ports:
       # Only bind on the local interface. To connect to Postgres externally, change this to 0.0.0.0
       - "127.0.0.1:5432:5432"
     environment:
       # Set these environment variables to configure the database, defaults to libredesk.
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD} 
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${LIBREDESK_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${LIBREDESK_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${LIBREDESK_POSTGRES_DB}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U ${LIBREDESK_POSTGRES_USER} -d ${LIBREDESK_POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 6
     volumes:
-      - /infrastructure/libredesk/postgres-data:/var/lib/postgresql/data
+      - ./infrastructure/libredesk/postgres-data:/var/lib/postgresql/data
 
-  # Redis
   redis:
     image: redis:7-alpine
     container_name: libredesk_redis
@@ -229,8 +262,6 @@ services:
       # Only bind on the local interface.
       - "127.0.0.1:6379:6379"
     networks:
-      - libredesk
+      - libredesk_network
     volumes:
-      - /infrastructure/libredesk/redis-data:/data
-
-  # --- Fin docker compose Libredesk ---
+      - ./infrastructure/libredesk/redis-data:/data
