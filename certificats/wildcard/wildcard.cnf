@@ -1,0 +1,29 @@
+[req]
+default_bits       = 2048
+prompt             = no
+default_md         = sha256
+distinguished_name = dn
+req_extensions     = v3_req
+
+[dn]
+C  = CA
+ST = Quebec
+O  = MonOrg
+CN = tp-sso.local
+
+[v3_req]
+subjectAltName     = @alt_names
+basicConstraints   = CA:FALSE
+keyUsage           = digitalSignature, keyEncipherment
+extendedKeyUsage   = serverAuth
+
+[alt_names]
+DNS.1 = *.tp-sso.local
+DNS.2 = tp-sso.local
+DNS.3 = auth.tp-sso.local
+DNS.4 = nginx.tp-sso.local
+DNS.5 = gitlab.tp-sso.local
+DNS.6 = nextcloud.tp-sso.local
+DNS.7 = rocketchat.tp-sso.local
+DNS.8 = libredesk.tp-sso.local
+DNS.9 = jenkins.tp-sso.local

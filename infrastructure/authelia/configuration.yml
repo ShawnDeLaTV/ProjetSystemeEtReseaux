@@ -50,12 +50,13 @@
   # disable_healthcheck: false
 
   ## Authelia by default doesn't accept TLS communication on the server port. This section overrides this behaviour.
-  # tls:
+  #tls:
+  #  certificates_directory: /config/certs/
     ## The path to the DER base64/PEM format private key.
-    # key: ''
+    #key: '/config/certs/authelia.key'
 
     ## The path to the DER base64/PEM format public certificate.
-    # certificate: ''
+    #certificate: '/config/certs/authelia.crt'
 
     ## The list of certificates for client authentication.
     # client_certificates: []
@@ -119,15 +120,15 @@
 ##
 ## Log Configuration
 ##
-# log:
+#log:
   ## Level of verbosity for logs: info, debug, trace.
-  # level: 'debug'
+  #level: 'debug'
 
   ## Format the logs are written as: json, text.
   # format: 'json'
 
   ## File path where the logs will be written. If not set logs are written to stdout.
-  # file_path: '/config/authelia.log'
+  #file_path: '/config/authelia.log'
 
   ## Whether to also log to stdout when a log_file_path is defined.
   # keep_stdout: false
@@ -460,21 +461,22 @@ authentication_backend:
     ## Depending on the option here certain other values in this section have a default value, notably all of the
     ## attribute mappings have a default value that this config overrides, you can read more about these default values
     ## at https://www.authelia.com/c/ldap#defaults
-    implementation: custom
+    implementation: lldap
     address: ldap://lldap:3890
     timeout: 5s
     start_tls: false  
-    base_dn: dc=techsolutions,dc=com
+    base_dn: dc=tp-sso,dc=local
     additional_users_dn: ou=people
     additional_groups_dn: ou=groups
-    user: uid=admin,ou=people,dc=techsolutions,dc=com
+    user: uid=admin,ou=people,dc=tp-sso,dc=local
+    password: AdminPass123
+    users_filter: "(&(|({username_attribute}={input})({mail_attribute}={input}))(objectClass=person))"
+    groups_filter: "(member={dn})"
     attributes:
       display_name: displayName
       username: uid
-      mail: mail
-    
-    users_filter: "(&(|({username_attribute}={input})({mail_attribute}={input}))(objectClass=person))"
-    groups_filter: "(member={dn})"
+      group_name: cn
+
 
     ## The dial timeout for LDAP in the duration common syntax.
     # timeout: '20 seconds'
@@ -739,37 +741,36 @@ access_control:
   ## Default policy can either be 'bypass', 'one_factor', 'two_factor' or 'deny'. It is the policy applied to any
   ## resource if there is no policy to be applied to the user.
   default_policy: 'deny'
+#  default_policy: 'one_factor'
 
   rules:
-    ## Rules applied to everyone
-    - domain: "localhost"
-      policy: 'one_factor'
-      subject: "group:gitlab_users"
-    
-    - domain: 'gitlab.techsolutions.com'
-      policy: 'two_factor'
-      subject:
-        - 'group:gitlab_users'
+    - domain: 'auth.tp-sso.local'
+      policy: 'bypass'         # important ! sinon boucle infinie
 
-    - domain: 'jenkins.techsolutions.com'
-      policy: 'two_factor'
-      subject:
-        - 'group:jenkins_users'
-
-    - domain: 'nextcloud.techsolutions.com'
+    - domain: 'nextcloud.tp-sso.local'
       policy: 'two_factor'
       subject:
         - 'group:nextcloud_users'
 
-    - domain: 'libredesk.techsolutions.com'
+    - domain: 'gitlab.tp-sso.local'
       policy: 'two_factor'
       subject:
-        - 'group:libredesk_users'
+        - 'group:gitlab_users'
 
-    - domain: 'rocketchat.techsolutions.com'
+    - domain: 'jenkins.tp-sso.local'
+      policy: 'two_factor'
+      subject:
+        - 'group:jenkins_users'
+
+    - domain: 'chat.tp-sso.local'
       policy: 'two_factor'
       subject:
         - 'group:rocketchat_users'
+    
+    - domain: 'libredesk.tp-sso.local'
+      policy: 'two_factor'
+      subject:
+        - 'group:libredesk_users'
 
     ## Domain Regex examples. Generally we recommend just using a standard domain.
     # - domain_regex: '^(?P<User>\w+)\.example\.com$'
@@ -860,9 +861,9 @@ session:
   remember_me: '1M'
 
   cookies:
-    - domain: '127.0.0.1'
-      authelia_url: 'https://127.0.0.1:9091'
-      default_redirection_url: 'https://127.0.0.1:9091/home'
+    - domain: 'tp-sso.local'
+      authelia_url: 'https://auth.tp-sso.local'
+      default_redirection_url: 'https://auth.tp-sso.local/dashboard'
       same_site: lax
       ## The domain to protect.
       ## Note: the Authelia portal must also be in that domain.
@@ -1330,6 +1331,11 @@ identity_providers:
         custom_claims:
           is_nextcloud_admin: {}
 
+      libredesk_policy:
+        # Forcer l'inclusions des claims dans le JWT
+        id_token:
+          - 'email'
+
     scopes:
       nextcloud_userinfo:
         claims:
@@ -1339,10 +1345,7 @@ identity_providers:
     ## The JWK's issuer option configures multiple JSON Web Keys. It's required that at least one of the JWK's
     ## configured has the RS256 algorithm. For RSA keys (RS or PS) the minimum is a 2048 bit key.
     jwks:
-    -
-      key: 
-          |
-          [ajouter ici la clé privée au format PEM DER]
+    - key: {{ secret "/config/jwks/private.pem" | mindent 10 "|" | msquote }}
 
       ## Key ID embedded into the JWT header for key matching. Must be an alphanumeric string with 7 or less characters.
       ## This value is automatically generated if not provided. It's recommended to not configure this.
@@ -1369,7 +1372,7 @@ identity_providers:
         # -----END CERTIFICATE-----
 
     ## Enables additional debug messages.
-    # enable_client_debug_messages: false
+    enable_client_debug_messages: true
 
     ## SECURITY NOTICE: It's not recommended changing this option and values below 8 are strongly discouraged.
     # minimum_parameter_entropy: 8
@@ -1443,7 +1446,7 @@ identity_providers:
 
         ## The description to show to users when they end up on the consent screen. Defaults to the ID above.
         client_name: 'GitLab TechSolutions'
-        client_secret: '{{ secret "gitlab_secret" }}'
+        client_secret: '$pbkdf2-sha512$310000$rv98DMDLz3lMVPf98lV64g$reaCyXLYeug1Bhfvaq1iZtKHjls0OrdZ62BKrvfIuTiF0CPi5LzlR0/lf2YL2HOZ0aY.GmQruzJEaOtWoNn0LQ'
         ## The client secret is a shared secret between Authelia and the consumer of this client.
         # yamllint disable-line rule:line-length
 
@@ -1455,13 +1458,13 @@ identity_providers:
         public: false
 
         ## Redirect URI's specifies a list of valid case-sensitive callbacks for this client.
-        # redirect_uris:
-          # - 'https://oidc.example.com:8080/oauth2/callback'
+        redirect_uris:
+          - 'https://gitlab.tp-sso.local/users/auth/openid_connect/callback'
 
         ## Request URI's specifies a list of valid case-sensitive TLS-secured URIs for this client for use as
         ## URIs to fetch Request Objects.
-        request_uris:
-          - 'https://gitlab.techsolutions.com/users/auth/openid_connect/callback'
+        #request_uris:
+          
 
         ## Audience this client is allowed to request.
         # audience: []
@@ -1469,9 +1472,10 @@ identity_providers:
         ## Scopes this client is allowed to request.
         scopes:
           - 'openid'
-          - 'groups'
-          - 'email'
           - 'profile'
+          - 'email'          
+          - 'groups'
+
 
         ## Grant Types configures which grants this client can obtain.
         ## It's not recommended to define this unless you know what you're doing.
@@ -1727,7 +1731,7 @@ identity_providers:
       #JENKINS
       - client_id: 'jenkins'
         client_name: 'Jenkins TechSolutions'
-        client_secret: '{{ secret "jenkins_secret" }}'
+        client_secret: '$pbkdf2-sha512$310000$pKyjFH.pA9YK5HD0e9SOUg$CXnq8eZq8Dc5AqVmDno.l5j5pdHg8R8UM4CG0oAu.sw0/kvI/kIaWfUAMry8M/8jNZXFMKtr.TbunPCaa996gw'
         public: false
         authorization_policy: 'two_factor'
         scopes:
@@ -1736,19 +1740,19 @@ identity_providers:
           - 'email'
           - 'profile'
         redirect_uris:
-          - 'https://jenkins.techsolutions.com/securityRealm/finishLogin'
+          - 'https://jenkins.tp-sso.local/securityRealm/finishLogin'
 
       # NEXTCLOUD
       - client_id: 'nextcloud'
         client_name: 'NextCloud'
-        client_secret: '{{ secret "nextcloud_secret" }}'
+        client_secret: '$pbkdf2-sha512$310000$mSlmsfp1AJjQyvihqjHREA$JstL2CJP10n0YHtNffAAufmQxImjlAv08Xe/b.XjAYF4Hq2zW75EKXcG8HgtzXy8nFxnMYCVuPXBSeQwks/y3Q'
         public: false
         authorization_policy: 'two_factor'
         require_pkce: true
         pkce_challenge_method: 'S256'
         claims_policy: 'nextcloud_userinfo'
         redirect_uris:
-          - 'http://localhost:8081/apps/oidc_login/oidc'
+          - 'https://nextcloud.tp-sso.local/apps/oidc_login/oidc'
         scopes:
           - 'openid'
           - 'profile'
@@ -1766,13 +1770,13 @@ identity_providers:
       # RocketChat
       - client_id: 'rocketchat'
         client_name: 'Rocket.Chat'
-        client_secret: '{{ secret "rocketchat_secret" }}'
+        client_secret: '$pbkdf2-sha512$310000$fvhjzFxxC1Xj4faAzJjJxA$ZuZkW63Ewz0zndiGX/eeNUXCpT6DUKYeniDlc4/Q30RhYFY/d5saL2gIZPzUbsqToVJUS7jz2T8aNd1oaBxixw'
         public: false
         authorization_policy: 'two_factor'
         require_pkce: false
         pkce_challenge_method: ''
         redirect_uris:
-          - 'http://localhost:3000/_oauth/authelia'
+          - 'https://rocketchat.tp-sso.local/_oauth/authelia'
         scopes:
           - 'openid'
           - 'profile'
@@ -1789,23 +1793,23 @@ identity_providers:
       # LibreDesk
       - client_id: 'libredesk'
         client_name: 'LibreDesk'
-        client_secret: '{{ secret "libredesk_secret" }}'
+        client_secret: '$pbkdf2-sha512$310000$2wFbhRpn.5x1I.K4uBbe7Q$l4ElW2ioWFuaIrOZuTPTIu9zdGXHOhJMjQWhD2SByctj.ktawduVv5xwz15RfqFLTukGKoBMCJPwMkbuv9YKTw'
         public: false
         authorization_policy: 'two_factor'
         require_pkce: false
         pkce_challenge_method: ''
         redirect_uris:
-          - 'http://localhost:9000/_oauth/authelia'
+          - 'https://libredesk.tp-sso.local/api/v1/oidc/1/finish'
         scopes:
           - 'openid'
-          - 'profile'
           - 'email'
-          - 'groups'
+          - 'profile'
         response_types:
           - 'code'
         grant_types:
           - 'authorization_code'
+        claims_policy: 'libredesk_policy' # Forcer l'inclusion des claims dans le JWT (voir la section claims_policies)
         access_token_signed_response_alg: 'none'
         userinfo_signed_response_alg: 'none'
-        token_endpoint_auth_method: 'client_secret_post'
+        token_endpoint_auth_method: 'client_secret_basic'
 ...

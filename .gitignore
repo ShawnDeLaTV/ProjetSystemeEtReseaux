@@ -2,31 +2,42 @@
 .env
 
 # --- Certificats ---
-private.pem
-public.pem
+certificats/ca
+certificats/wildcard/wildcard.crt
+certificats/wildcard/wildcard.csr
+certificats/wildcard/wildcard.key
 
 # --- Données des services ---
 # Authelia
+infrastructure/authelia/certs
+infrastructure/authelia/jwks
+infrastructure/authelia/db.sqlite3
 infrastructure/authelia/notification.txt
-# Nginx
-infrastructure/nginx/data
+
 # Gitlab
 infrastructure/gitlab/config
 infrastructure/gitlab/data
 infrastructure/gitlab/logs
+
 # Jenkins
 infrastructure/jenkins/data
+infrastructure/jenkins/ca.crt
 infrastructure/jenkins/jenkins.yaml
+
+# LibreDesk
+infrastructure/libredesk/postgres-data
+infrastructure/libredesk/redis-data
+infrastructure/libredesk/uploads
+infrastructure/libredesk/config.toml
+
 # Nextcloud
 infrastructure/nextcloud/data
 infrastructure/nextcloud/db
+infrastructure/nextcloud/before-starting/ca.crt
+
+# Nginx
+infrastructure/nginx/data
+
 # Rocket.Chat
 infrastructure/rocketchat/db
-# LibreDesk
-infrastructure/libredesk/config.toml
-infrastructure/libredesk/uploads
-infrastructure/libredesk/postgres-data
-infrastructure/libredesk/redis-data
-
-# --- Secrets ---
-secrets
+infrastructure/rocketchat/uploads

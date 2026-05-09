@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Virification de la dernière version de Nextcloud
+echo "Vérification de la dernière version de Nextcloud..."
+php occ upgrade
 # Installation de Nextcloud 
 echo "Installation de Nextcloud..."
 php occ maintenance:install --database "mysql" --database-host "$MYSQL_HOST" --database-name "$MYSQL_DATABASE" --database-user "$MYSQL_USER" --database-pass "$MYSQL_PASSWORD" --admin-user "$NEXTCLOUD_ADMIN_USER" --admin-pass "$NEXTCLOUD_ADMIN_PASSWORD"
